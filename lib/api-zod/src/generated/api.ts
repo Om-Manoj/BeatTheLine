@@ -24,11 +24,25 @@ export const GetMenuResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "description": zod.string(),
-  "price": zod.number(),
+  "price": zod.number().nullable(),
   "vegetarian": zod.boolean(),
-  "imageKey": zod.string()
+  "imageKey": zod.string(),
+  "restaurantId": zod.string(),
+  "restaurant": zod.string(),
+  "category": zod.string(),
+  "available": zod.boolean()
 })
 export const GetMenuResponse = zod.array(GetMenuResponseItem)
+
+
+/**
+ * @summary Get the dining hall restaurant list
+ */
+export const GetRestaurantsResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string()
+})
+export const GetRestaurantsResponse = zod.array(GetRestaurantsResponseItem)
 
 
 /**

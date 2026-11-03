@@ -28,7 +28,7 @@ const formatDate = () => {
   const date = new Date();
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
-const money = (value: number) => `$${value.toFixed(2)}`;
+const money = (value: number) => `AED ${value.toFixed(2)}`;
 const prettyTime = (time: string) => {
   const [hourText, minute] = time.split(':');
   const hour = Number(hourText);
@@ -84,8 +84,10 @@ export default function CheckoutScreen() {
   const [studentName, setStudentName] = useState('');
   const [formError, setFormError] = useState('');
   const orderMutation = useCreateOrder();
-  const orderItems = menu.filter((item) => (quantities[item.id] ?? 0) > 0);
-  const total = orderItems.reduce((sum, item) => sum + item.price * quantities[item.id], 0);
+  const orderItems = menu.filter(
+    (item) => item.available && item.price !== null && (quantities[item.id] ?? 0) > 0,
+  );
+  const total = orderItems.reduce((sum, item) => sum + (item.price ?? 0) * quantities[item.id], 0);
   const topInset = Math.max(insets.top, Platform.OS === 'web' ? 67 : 0);
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'web' ? 34 : 0);
 
@@ -216,7 +218,7 @@ export default function CheckoutScreen() {
                     {quantities[item.id]} × {item.name}
                   </Text>
                   <Text style={[styles.summaryPrice, { color: colors.foreground }]}>
-                    {money(item.price * quantities[item.id])}
+                    {money((item.price ?? 0) * quantities[item.id])}
                   </Text>
                 </View>
               ))}

@@ -14,7 +14,7 @@ import { getGetOrderQueryKey, useGetOrder } from '@workspace/api-client-react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 
-const money = (value: number) => `$${value.toFixed(2)}`;
+const money = (value: number) => `AED ${value.toFixed(2)}`;
 const prettyTime = (time: string) => {
   const [hourText, minute] = time.split(':');
   const hour = Number(hourText);

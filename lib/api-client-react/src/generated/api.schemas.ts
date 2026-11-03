@@ -13,9 +13,19 @@ export interface MenuItem {
   id: string;
   name: string;
   description: string;
-  price: number;
+  /** @nullable */
+  price: number | null;
   vegetarian: boolean;
   imageKey: string;
+  restaurantId: string;
+  restaurant: string;
+  category: string;
+  available: boolean;
+}
+
+export interface Restaurant {
+  id: string;
+  name: string;
 }
 
 export interface PickupSlot {

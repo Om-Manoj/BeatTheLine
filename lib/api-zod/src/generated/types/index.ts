@@ -15,3 +15,4 @@ export * from './orderInput';
 export * from './orderLine';
 export * from './orderLineInput';
 export * from './pickupSlot';
+export * from './restaurant';
