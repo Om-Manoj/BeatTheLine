@@ -5,8 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderInputBalanceAccount } from './orderInputBalanceAccount';
 import type { OrderLineInput } from './orderLineInput';
-import type { PaymentMethod } from './paymentMethod';
 
 export interface OrderInput {
   /**
@@ -17,7 +17,12 @@ export interface OrderInput {
   pickupDate: Date;
   /** @pattern ^(11:(30|40|50)|12:([0-5]0)|13:([0-2]0|30))$ */
   pickupTime: string;
-  paymentMethod: PaymentMethod;
+  /**
+     * @minimum 0
+     * @maximum 20
+     */
+  mealSwipeCount: number;
+  balanceAccount: OrderInputBalanceAccount;
   /** @minItems 1 */
   items: OrderLineInput[];
 }

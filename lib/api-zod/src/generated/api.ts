@@ -71,6 +71,9 @@ export const GetPickupSlotsResponse = zod.array(GetPickupSlotsResponseItem)
 export const createOrderBodyStudentNameMax = 80;
 
 export const createOrderBodyPickupTimeRegExp = new RegExp('^(11:(30|40|50)|12:([0-5]0)|13:([0-2]0|30))$');
+export const createOrderBodyMealSwipeCountMin = 0;
+export const createOrderBodyMealSwipeCountMax = 20;
+
 export const createOrderBodyItemsItemQuantityMax = 20;
 
 
@@ -80,21 +83,31 @@ export const CreateOrderBody = zod.object({
   "studentName": zod.string().min(1).max(createOrderBodyStudentNameMax),
   "pickupDate": zod.coerce.date(),
   "pickupTime": zod.string().regex(createOrderBodyPickupTimeRegExp),
-  "paymentMethod": zod.enum(['meal_swipe', 'flex_dirhams', 'campus_dirhams', 'pay_at_pickup']),
+  "mealSwipeCount": zod.number().int().min(createOrderBodyMealSwipeCountMin).max(createOrderBodyMealSwipeCountMax),
+  "balanceAccount": zod.enum(['flex_dirhams', 'campus_dirhams']),
   "items": zod.array(zod.object({
   "itemId": zod.string(),
   "quantity": zod.number().int().min(1).max(createOrderBodyItemsItemQuantityMax)
 })).min(1)
 })
 
+export const createOrderResponseMealSwipesUsedMin = 0;
+
+export const createOrderResponseDirhamAmountMin = 0;
+
+
+
 export const CreateOrderResponse = zod.object({
   "id": zod.number().int(),
+  "confirmationToken": zod.string().uuid(),
   "pickupCode": zod.string(),
   "studentName": zod.string(),
   "pickupDate": zod.coerce.date(),
   "pickupTime": zod.string(),
   "total": zod.number(),
-  "paymentMethod": zod.enum(['meal_swipe', 'flex_dirhams', 'campus_dirhams', 'pay_at_pickup']),
+  "paymentMethod": zod.enum(['meal_swipe', 'flex_dirhams', 'campus_dirhams', 'meal_swipe_plus_flex', 'meal_swipe_plus_campus', 'pay_at_pickup']),
+  "mealSwipesUsed": zod.number().int().min(createOrderResponseMealSwipesUsedMin),
+  "dirhamAmount": zod.number().min(createOrderResponseDirhamAmountMin),
   "items": zod.array(zod.object({
   "itemId": zod.string(),
   "name": zod.string(),
@@ -108,17 +121,73 @@ export const CreateOrderResponse = zod.object({
  * @summary Retrieve a placed order
  */
 export const GetOrderParams = zod.object({
-  "orderId": zod.coerce.number().int()
+  "confirmationToken": zod.coerce.string().uuid()
 })
+
+export const getOrderResponseMealSwipesUsedMin = 0;
+
+export const getOrderResponseDirhamAmountMin = 0;
+
+
 
 export const GetOrderResponse = zod.object({
   "id": zod.number().int(),
+  "confirmationToken": zod.string().uuid(),
   "pickupCode": zod.string(),
   "studentName": zod.string(),
   "pickupDate": zod.coerce.date(),
   "pickupTime": zod.string(),
   "total": zod.number(),
-  "paymentMethod": zod.enum(['meal_swipe', 'flex_dirhams', 'campus_dirhams', 'pay_at_pickup']),
+  "paymentMethod": zod.enum(['meal_swipe', 'flex_dirhams', 'campus_dirhams', 'meal_swipe_plus_flex', 'meal_swipe_plus_campus', 'pay_at_pickup']),
+  "mealSwipesUsed": zod.number().int().min(getOrderResponseMealSwipesUsedMin),
+  "dirhamAmount": zod.number().min(getOrderResponseDirhamAmountMin),
+  "items": zod.array(zod.object({
+  "itemId": zod.string(),
+  "name": zod.string(),
+  "price": zod.number(),
+  "quantity": zod.number().int()
+}))
+})
+
+
+/**
+ * @summary Get active dining orders for signed-in users
+ */
+export const GetStaffOrdersResponseItem = zod.object({
+  "id": zod.number().int(),
+  "pickupCode": zod.string(),
+  "studentName": zod.string(),
+  "pickupDate": zod.coerce.date(),
+  "pickupTime": zod.string(),
+  "status": zod.enum(['new', 'preparing', 'ready', 'collected']),
+  "items": zod.array(zod.object({
+  "itemId": zod.string(),
+  "name": zod.string(),
+  "price": zod.number(),
+  "quantity": zod.number().int()
+}))
+})
+export const GetStaffOrdersResponse = zod.array(GetStaffOrdersResponseItem)
+
+
+/**
+ * @summary Update order preparation status
+ */
+export const UpdateStaffOrderStatusParams = zod.object({
+  "orderId": zod.coerce.number().int()
+})
+
+export const UpdateStaffOrderStatusBody = zod.object({
+  "status": zod.enum(['preparing', 'ready', 'collected'])
+})
+
+export const UpdateStaffOrderStatusResponse = zod.object({
+  "id": zod.number().int(),
+  "pickupCode": zod.string(),
+  "studentName": zod.string(),
+  "pickupDate": zod.coerce.date(),
+  "pickupTime": zod.string(),
+  "status": zod.enum(['new', 'preparing', 'ready', 'collected']),
   "items": zod.array(zod.object({
   "itemId": zod.string(),
   "name": zod.string(),

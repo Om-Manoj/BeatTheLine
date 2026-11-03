@@ -47,14 +47,12 @@ export interface OrderLineInput {
   quantity: number;
 }
 
-export type PaymentMethod = typeof PaymentMethod[keyof typeof PaymentMethod];
+export type OrderInputBalanceAccount = typeof OrderInputBalanceAccount[keyof typeof OrderInputBalanceAccount];
 
 
-export const PaymentMethod = {
-  meal_swipe: 'meal_swipe',
+export const OrderInputBalanceAccount = {
   flex_dirhams: 'flex_dirhams',
   campus_dirhams: 'campus_dirhams',
-  pay_at_pickup: 'pay_at_pickup',
 } as const;
 
 export interface OrderInput {
@@ -66,9 +64,49 @@ export interface OrderInput {
   pickupDate: string;
   /** @pattern ^(11:(30|40|50)|12:([0-5]0)|13:([0-2]0|30))$ */
   pickupTime: string;
-  paymentMethod: PaymentMethod;
+  /**
+     * @minimum 0
+     * @maximum 20
+     */
+  mealSwipeCount: number;
+  balanceAccount: OrderInputBalanceAccount;
   /** @minItems 1 */
   items: OrderLineInput[];
+}
+
+export type PaymentMethod = typeof PaymentMethod[keyof typeof PaymentMethod];
+
+
+export const PaymentMethod = {
+  meal_swipe: 'meal_swipe',
+  flex_dirhams: 'flex_dirhams',
+  campus_dirhams: 'campus_dirhams',
+  meal_swipe_plus_flex: 'meal_swipe_plus_flex',
+  meal_swipe_plus_campus: 'meal_swipe_plus_campus',
+  pay_at_pickup: 'pay_at_pickup',
+} as const;
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
+
+
+export const OrderStatus = {
+  new: 'new',
+  preparing: 'preparing',
+  ready: 'ready',
+  collected: 'collected',
+} as const;
+
+export type StaffOrderStatusUpdateStatus = typeof StaffOrderStatusUpdateStatus[keyof typeof StaffOrderStatusUpdateStatus];
+
+
+export const StaffOrderStatusUpdateStatus = {
+  preparing: 'preparing',
+  ready: 'ready',
+  collected: 'collected',
+} as const;
+
+export interface StaffOrderStatusUpdate {
+  status: StaffOrderStatusUpdateStatus;
 }
 
 export interface OrderLine {
@@ -80,12 +118,27 @@ export interface OrderLine {
 
 export interface Order {
   id: number;
+  confirmationToken: string;
   pickupCode: string;
   studentName: string;
   pickupDate: string;
   pickupTime: string;
   total: number;
   paymentMethod: PaymentMethod;
+  /** @minimum 0 */
+  mealSwipesUsed: number;
+  /** @minimum 0 */
+  dirhamAmount: number;
+  items: OrderLine[];
+}
+
+export interface StaffOrder {
+  id: number;
+  pickupCode: string;
+  studentName: string;
+  pickupDate: string;
+  pickupTime: string;
+  status: OrderStatus;
   items: OrderLine[];
 }
 

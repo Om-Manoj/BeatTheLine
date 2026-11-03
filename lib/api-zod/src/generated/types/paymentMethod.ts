@@ -13,5 +13,7 @@ export const PaymentMethod = {
   meal_swipe: 'meal_swipe',
   flex_dirhams: 'flex_dirhams',
   campus_dirhams: 'campus_dirhams',
+  meal_swipe_plus_flex: 'meal_swipe_plus_flex',
+  meal_swipe_plus_campus: 'meal_swipe_plus_campus',
   pay_at_pickup: 'pay_at_pickup',
 } as const;

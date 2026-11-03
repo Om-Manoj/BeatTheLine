@@ -20,8 +20,28 @@ const paymentName = (method: PaymentMethod) => ({
   meal_swipe: 'Meal swipes',
   flex_dirhams: 'Flex dirhams',
   campus_dirhams: 'Campus dirhams',
+  meal_swipe_plus_flex: 'Meal swipes + Flex dirhams',
+  meal_swipe_plus_campus: 'Meal swipes + Campus dirhams',
   pay_at_pickup: 'Pay at pickup',
 })[method];
+const paymentDetails = (order: {
+  paymentMethod: PaymentMethod;
+  mealSwipesUsed: number;
+  dirhamAmount: number;
+}) => {
+  const parts: string[] = [];
+  if (order.mealSwipesUsed > 0) {
+    parts.push(
+      `${order.mealSwipesUsed} whole ${order.mealSwipesUsed === 1 ? 'swipe' : 'swipes'} · ${money(order.mealSwipesUsed * 33.6)}`,
+    );
+  }
+  if (order.dirhamAmount > 0) {
+    const account = order.paymentMethod.includes('flex') ? 'Flex dirhams' : 'Campus dirhams';
+    parts.push(`${money(order.dirhamAmount)} from ${account}`);
+  }
+  if (order.paymentMethod === 'pay_at_pickup') parts.push('Payment due at pickup');
+  return parts.join(' + ');
+};
 const prettyTime = (time: string) => {
   const [hourText, minute] = time.split(':');
   const hour = Number(hourText);
@@ -31,12 +51,14 @@ const prettyTime = (time: string) => {
 export default function OrderConfirmationScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const orderId = Number(id);
-  const { data: order, isLoading, isError, refetch } = useGetOrder(orderId, {
+  const { id: confirmationToken } = useLocalSearchParams<{ id: string }>();
+  const isValidToken =
+    typeof confirmationToken === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(confirmationToken);
+  const { data: order, isLoading, isError, refetch } = useGetOrder(confirmationToken ?? '', {
     query: {
-      enabled: Number.isInteger(orderId) && orderId > 0,
-      queryKey: getGetOrderQueryKey(orderId),
+      enabled: isValidToken,
+      queryKey: getGetOrderQueryKey(confirmationToken ?? ''),
     },
   });
   const topInset = Math.max(insets.top, Platform.OS === 'web' ? 67 : 0);
@@ -108,7 +130,7 @@ export default function OrderConfirmationScreen() {
           ))}
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <View style={styles.summaryRow}>
-            <Text style={[styles.totalLabel, { color: colors.foreground }]}>Total · pay at pickup</Text>
+            <Text style={[styles.totalLabel, { color: colors.foreground }]}>Order total</Text>
             <Text style={[styles.totalValue, { color: colors.foreground }]}>{money(order.total)}</Text>
           </View>
         </View>
@@ -118,8 +140,11 @@ export default function OrderConfirmationScreen() {
             <Text style={[styles.paymentEyebrow, { color: colors.mutedForeground }]}>PAYMENT OPTION · DEMO</Text>
           </View>
           <Text style={[styles.paymentMethod, { color: colors.foreground }]}>{paymentName(order.paymentMethod)}</Text>
+          {paymentDetails(order) ? (
+            <Text style={[styles.paymentNote, { color: colors.foreground }]}>{paymentDetails(order)}</Text>
+          ) : null}
           <Text style={[styles.paymentNote, { color: colors.mutedForeground }]}>
-            No balance was charged. Payment is still due at pickup.
+            Demo payment choice only. Nothing was charged.
           </Text>
         </View>
         <View style={styles.tip}>

@@ -5,7 +5,9 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { CartProvider } from '@/context/cart-context';
-import { setBaseUrl } from '@workspace/api-client-react';
+import { setAuthTokenGetter, setBaseUrl } from '@workspace/api-client-react';
+import { ClerkLoaded, ClerkProvider, useAuth } from '@clerk/expo';
+import { tokenCache } from '@clerk/expo/token-cache';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -21,6 +23,10 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
+const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
+if (!clerkPublishableKey) {
+  throw new Error('Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY.');
+}
 
 function RootLayoutNav() {
   return (
@@ -28,8 +34,19 @@ function RootLayoutNav() {
       <Stack.Screen name="index" />
       <Stack.Screen name="checkout" />
       <Stack.Screen name="order/[id]" />
+      <Stack.Screen name="staff/sign-in" />
+      <Stack.Screen name="staff/sign-up" />
+      <Stack.Screen name="staff" />
     </Stack>
   );
+}
+
+function AuthTokenSync() {
+  const { getToken } = useAuth();
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+  }, [getToken]);
+  return null;
 }
 
 export default function RootLayout() {
@@ -49,18 +66,27 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <SafeAreaProvider>
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <CartProvider>
-            <GestureHandlerRootView>
-              <KeyboardProvider>
-                <RootLayoutNav />
-              </KeyboardProvider>
-            </GestureHandlerRootView>
-          </CartProvider>
-        </QueryClientProvider>
-      </ErrorBoundary>
-    </SafeAreaProvider>
+    <ClerkProvider
+      publishableKey={clerkPublishableKey}
+      tokenCache={tokenCache}
+      proxyUrl={process.env.EXPO_PUBLIC_CLERK_PROXY_URL || undefined}
+    >
+      <ClerkLoaded>
+        <AuthTokenSync />
+        <SafeAreaProvider>
+          <ErrorBoundary>
+            <QueryClientProvider client={queryClient}>
+              <CartProvider>
+                <GestureHandlerRootView>
+                  <KeyboardProvider>
+                    <RootLayoutNav />
+                  </KeyboardProvider>
+                </GestureHandlerRootView>
+              </CartProvider>
+            </QueryClientProvider>
+          </ErrorBoundary>
+        </SafeAreaProvider>
+      </ClerkLoaded>
+    </ClerkProvider>
   );
 }

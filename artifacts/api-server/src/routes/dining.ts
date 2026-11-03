@@ -1,12 +1,22 @@
 import { Router, type IRouter } from "express";
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { CreateOrderBody } from "@workspace/api-zod";
 import { db } from "@workspace/db";
 import { orderItems, orders } from "@workspace/db/schema";
 import { logger } from "../lib/logger";
+import { requireSignedIn } from "../middlewares/staffAccess";
 
 const router: IRouter = Router();
 const SLOT_CAPACITY = 5;
+const MEAL_SWIPE_VALUE = 33.6;
+const orderStatuses = ["new", "preparing", "ready", "collected"] as const;
+type OrderStatus = (typeof orderStatuses)[number];
+const staffNextStatuses: Record<OrderStatus, readonly OrderStatus[]> = {
+  new: ["preparing"],
+  preparing: ["ready"],
+  ready: ["collected"],
+  collected: [],
+};
 
 const restaurants = [
   { id: "switch", name: "Switch" },
@@ -183,6 +193,20 @@ router.post("/orders", async (req, res) => {
   const total = Math.round(
     validItems.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100,
   ) / 100;
+  const mealSwipesUsed = input.mealSwipeCount;
+  if (mealSwipesUsed > Math.ceil(total / MEAL_SWIPE_VALUE)) {
+    return res.status(400).json({ error: "Choose no more meal swipes than the order needs." });
+  }
+  const dirhamAmount =
+    Math.round(Math.max(0, total - mealSwipesUsed * MEAL_SWIPE_VALUE) * 100) / 100;
+  const paymentMethod =
+    mealSwipesUsed === 0
+      ? input.balanceAccount
+      : dirhamAmount > 0
+        ? input.balanceAccount === "flex_dirhams"
+          ? "meal_swipe_plus_flex"
+          : "meal_swipe_plus_campus"
+        : "meal_swipe";
 
   try {
     const created = await db.transaction(async (tx) => {
@@ -201,10 +225,12 @@ router.post("/orders", async (req, res) => {
           studentName,
           pickupDate,
           pickupTime,
-          paymentMethod: input.paymentMethod,
+          paymentMethod,
+          mealSwipesUsed,
+          dirhamAmount,
           total,
         })
-        .returning({ id: orders.id });
+        .returning({ id: orders.id, confirmationToken: orders.confirmationToken });
       if (!createdOrder) throw new Error("Order insert did not return an ID.");
       const pickupCode = makePickupCode(createdOrder.id);
       await tx.update(orders).set({ pickupCode }).where(eq(orders.id, createdOrder.id));
@@ -217,16 +243,23 @@ router.post("/orders", async (req, res) => {
           quantity: item.quantity,
         })),
       );
-      return { id: createdOrder.id, pickupCode };
+      return {
+        id: createdOrder.id,
+        confirmationToken: createdOrder.confirmationToken,
+        pickupCode,
+      };
     });
 
     return res.status(201).json({
       id: created.id,
+      confirmationToken: created.confirmationToken,
       pickupCode: created.pickupCode,
       studentName,
       pickupDate,
       pickupTime,
-      paymentMethod: input.paymentMethod,
+      paymentMethod,
+      mealSwipesUsed,
+      dirhamAmount,
       total,
       items: validItems.map(({ itemId, name, price, quantity }) => ({
         itemId,
@@ -244,13 +277,21 @@ router.post("/orders", async (req, res) => {
   }
 });
 
-router.get("/orders/:orderId", async (req, res) => {
-  const id = Number(req.params.orderId);
-  if (!Number.isInteger(id) || id <= 0) {
+router.get("/orders/:confirmationToken", async (req, res) => {
+  const confirmationToken = req.params.confirmationToken;
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      confirmationToken,
+    )
+  ) {
     return res.status(404).json({ error: "Order not found." });
   }
   try {
-    const [order] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.confirmationToken, confirmationToken))
+      .limit(1);
     if (!order) return res.status(404).json({ error: "Order not found." });
     const items = await db
       .select({
@@ -260,20 +301,118 @@ router.get("/orders/:orderId", async (req, res) => {
         quantity: orderItems.quantity,
       })
       .from(orderItems)
-      .where(eq(orderItems.orderId, id));
+      .where(eq(orderItems.orderId, order.id));
     return res.json({
       id: order.id,
+      confirmationToken: order.confirmationToken,
       pickupCode: order.pickupCode,
       studentName: order.studentName,
       pickupDate: order.pickupDate,
       pickupTime: order.pickupTime,
       paymentMethod: order.paymentMethod,
+      mealSwipesUsed: order.mealSwipesUsed,
+      dirhamAmount: order.dirhamAmount,
       total: order.total,
       items,
     });
   } catch (error) {
     logger.error({ err: error }, "Failed to load dining order");
     return res.status(500).json({ error: "We couldn’t load that order." });
+  }
+});
+
+router.get("/staff/orders", requireSignedIn, async (_req, res) => {
+  try {
+    const activeOrders = await db
+      .select()
+      .from(orders)
+      .where(sql`${orders.status} <> 'collected'`)
+      .orderBy(orders.pickupDate, orders.pickupTime)
+      .limit(100);
+    if (activeOrders.length === 0) return res.json([]);
+
+    const lines = await db
+      .select({
+        orderId: orderItems.orderId,
+        itemId: orderItems.itemId,
+        name: orderItems.name,
+        price: orderItems.price,
+        quantity: orderItems.quantity,
+      })
+      .from(orderItems)
+      .where(inArray(orderItems.orderId, activeOrders.map((order) => order.id)));
+    const itemsByOrder = new Map<number, typeof lines>();
+    for (const line of lines) {
+      const orderLines = itemsByOrder.get(line.orderId) ?? [];
+      orderLines.push(line);
+      itemsByOrder.set(line.orderId, orderLines);
+    }
+
+    return res.json(
+      activeOrders.map((order) => ({
+        id: order.id,
+        pickupCode: order.pickupCode,
+        studentName: order.studentName,
+        pickupDate: order.pickupDate,
+        pickupTime: order.pickupTime,
+        status: order.status,
+        items: (itemsByOrder.get(order.id) ?? []).map(({ orderId: _orderId, ...item }) => item),
+      })),
+    );
+  } catch (error) {
+    logger.error({ err: error }, "Failed to load staff dining queue");
+    return res.status(500).json({ error: "The staff order queue is temporarily unavailable." });
+  }
+});
+
+router.patch("/staff/orders/:orderId/status", requireSignedIn, async (req, res) => {
+  const id = Number(req.params.orderId);
+  const nextStatus = req.body?.status;
+  if (
+    !Number.isInteger(id) ||
+    id <= 0 ||
+    !orderStatuses.includes(nextStatus as OrderStatus) ||
+    nextStatus === "new"
+  ) {
+    return res.status(400).json({ error: "Choose a valid next order status." });
+  }
+
+  try {
+    const [existing] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+    if (!existing) return res.status(404).json({ error: "Order not found." });
+    const currentStatus = existing.status as OrderStatus;
+    if (!staffNextStatuses[currentStatus]?.includes(nextStatus as OrderStatus)) {
+      return res.status(409).json({ error: "This order has already moved to another stage." });
+    }
+
+    const [updated] = await db
+      .update(orders)
+      .set({ status: nextStatus as OrderStatus })
+      .where(and(eq(orders.id, id), eq(orders.status, currentStatus)))
+      .returning();
+    if (!updated) {
+      return res.status(409).json({ error: "This order was updated by another staff member." });
+    }
+    return res.json({
+      id: updated.id,
+      pickupCode: updated.pickupCode,
+      studentName: updated.studentName,
+      pickupDate: updated.pickupDate,
+      pickupTime: updated.pickupTime,
+      status: updated.status,
+      items: await db
+        .select({
+          itemId: orderItems.itemId,
+          name: orderItems.name,
+          price: orderItems.price,
+          quantity: orderItems.quantity,
+        })
+        .from(orderItems)
+        .where(eq(orderItems.orderId, updated.id)),
+    });
+  } catch (error) {
+    logger.error({ err: error }, "Failed to update staff order status");
+    return res.status(500).json({ error: "The order status could not be updated." });
   }
 });
 

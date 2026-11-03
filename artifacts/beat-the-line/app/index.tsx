@@ -103,7 +103,83 @@ function MenuCard({
   );
 }
 
-export default function MenuScreen() {
+export default function HomeScreen() {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const [isCustomer, setIsCustomer] = useState(false);
+  const topInset = Math.max(insets.top, Platform.OS === 'web' ? 67 : 0);
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'web' ? 34 : 0);
+
+  if (isCustomer) return <MenuContent />;
+
+  return (
+    <View style={[styles.page, { backgroundColor: colors.background }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.roleContent,
+          { paddingTop: topInset + 34, paddingBottom: bottomInset + 28 },
+        ]}
+      >
+        <View style={styles.roleBrandMark}>
+          <Feather name="clock" size={23} color="#FFFFFF" />
+        </View>
+        <Text style={[styles.roleEyebrow, { color: colors.primary }]}>CAMPUS DINING</Text>
+        <Text style={[styles.roleTitle, { color: colors.foreground }]}>BeatTheLine</Text>
+        <Text style={[styles.roleSubtitle, { color: colors.mutedForeground }]}>
+          Order ahead, then pick up your food when it’s ready.
+        </Text>
+        <Text style={[styles.rolePrompt, { color: colors.foreground }]}>How are you using the app?</Text>
+        <Pressable
+          accessibilityRole="button"
+          testID="choose-customer"
+          onPress={() => setIsCustomer(true)}
+          style={({ pressed }) => [
+            styles.roleCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+            pressed && styles.pressed,
+          ]}
+        >
+          <View style={[styles.roleIcon, { backgroundColor: '#E8EFD9' }]}>
+            <Feather name="shopping-bag" size={21} color="#287A54" />
+          </View>
+          <View style={styles.roleCopy}>
+            <Text style={[styles.roleCardTitle, { color: colors.foreground }]}>I’m ordering food</Text>
+            <Text style={[styles.roleCardSub, { color: colors.mutedForeground }]}>
+              Browse dining options and choose a pickup time.
+            </Text>
+          </View>
+          <Feather name="arrow-right" size={19} color={colors.primary} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          testID="choose-staff"
+          onPress={() => router.push('/staff/sign-in')}
+          style={({ pressed }) => [
+            styles.roleCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+            pressed && styles.pressed,
+          ]}
+        >
+          <View style={[styles.roleIcon, { backgroundColor: '#FFF1D5' }]}>
+            <Feather name="clipboard" size={21} color="#9C6812" />
+          </View>
+          <View style={styles.roleCopy}>
+            <Text style={[styles.roleCardTitle, { color: colors.foreground }]}>I work in dining</Text>
+            <Text style={[styles.roleCardSub, { color: colors.mutedForeground }]}>
+              Sign in to view and prepare incoming orders.
+            </Text>
+          </View>
+          <Feather name="arrow-right" size={19} color={colors.primary} />
+        </Pressable>
+        <Text style={[styles.roleFootnote, { color: colors.mutedForeground }]}>
+          Prototype staff orders are visible to any signed-in account.
+        </Text>
+      </ScrollView>
+    </View>
+  );
+}
+
+function MenuContent() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { data: menu, isLoading, isError, refetch } = useGetMenu();
@@ -292,6 +368,18 @@ export default function MenuScreen() {
 
 const styles = StyleSheet.create({
   page: { flex: 1 },
+  roleContent: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 22 },
+  roleBrandMark: { width: 50, height: 50, borderRadius: 17, backgroundColor: '#287A54', alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
+  roleEyebrow: { fontSize: 11, letterSpacing: 1.5, fontWeight: '700' },
+  roleTitle: { fontSize: 34, fontWeight: '700', letterSpacing: -1.2, marginTop: 4 },
+  roleSubtitle: { fontSize: 14, lineHeight: 21, marginTop: 9, marginBottom: 28, maxWidth: 310 },
+  rolePrompt: { fontSize: 17, fontWeight: '700', marginBottom: 12 },
+  roleCard: { minHeight: 88, borderWidth: 1, borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
+  roleIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  roleCopy: { flex: 1 },
+  roleCardTitle: { fontSize: 14, fontWeight: '700' },
+  roleCardSub: { fontSize: 11, lineHeight: 16, marginTop: 3 },
+  roleFootnote: { fontSize: 11, lineHeight: 16, textAlign: 'center', marginTop: 7 },
   listContent: { paddingHorizontal: 18, paddingTop: 12 },
   topLine: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 17 },
   eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },

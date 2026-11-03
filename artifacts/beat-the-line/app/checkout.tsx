@@ -30,13 +30,19 @@ const formatDate = () => {
 };
 const money = (value: number) => `AED ${value.toFixed(2)}`;
 const SWIPE_VALUE = 33.6;
-const paymentMethods: { id: Exclude<PaymentMethod, 'pay_at_pickup'>; name: string; detail: string; icon: 'credit-card' | 'dollar-sign' | 'book-open' }[] = [
-  { id: 'meal_swipe', name: 'Meal swipes', detail: 'Whole swipes · AED 33.60 each', icon: 'credit-card' },
-  { id: 'flex_dirhams', name: 'Flex dirhams', detail: 'Pay the exact amount from Flex', icon: 'dollar-sign' },
-  { id: 'campus_dirhams', name: 'Campus dirhams', detail: 'Pay the exact amount from Campus', icon: 'book-open' },
+type BalanceAccount = 'flex_dirhams' | 'campus_dirhams';
+const balanceAccounts: { id: BalanceAccount; name: string; detail: string; icon: 'dollar-sign' | 'book-open' }[] = [
+  { id: 'flex_dirhams', name: 'Flex dirhams', detail: 'Use Flex for all or part of the remainder', icon: 'dollar-sign' },
+  { id: 'campus_dirhams', name: 'Campus dirhams', detail: 'Use Campus for all or part of the remainder', icon: 'book-open' },
 ];
-const paymentName = (method: PaymentMethod) =>
-  paymentMethods.find((option) => option.id === method)?.name ?? 'Pay at pickup';
+const paymentName = (method: PaymentMethod) => ({
+  meal_swipe: 'Meal swipes',
+  flex_dirhams: 'Flex dirhams',
+  campus_dirhams: 'Campus dirhams',
+  meal_swipe_plus_flex: 'Meal swipes + Flex dirhams',
+  meal_swipe_plus_campus: 'Meal swipes + Campus dirhams',
+  pay_at_pickup: 'Pay at pickup',
+})[method];
 const prettyTime = (time: string) => {
   const [hourText, minute] = time.split(':');
   const hour = Number(hourText);
@@ -89,7 +95,8 @@ export default function CheckoutScreen() {
   const { data: slots = [], isLoading: slotsLoading, isError: slotsError, refetch } =
     useGetPickupSlots({ date: pickupDate });
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedPayment, setSelectedPayment] = useState<Exclude<PaymentMethod, 'pay_at_pickup'> | null>(null);
+  const [mealSwipeCount, setMealSwipeCount] = useState(0);
+  const [balanceAccount, setBalanceAccount] = useState<BalanceAccount>('flex_dirhams');
   const [showNetIdPreview, setShowNetIdPreview] = useState(false);
   const [studentName, setStudentName] = useState('');
   const [formError, setFormError] = useState('');
@@ -98,8 +105,10 @@ export default function CheckoutScreen() {
     (item) => item.available && item.price !== null && (quantities[item.id] ?? 0) > 0,
   );
   const total = orderItems.reduce((sum, item) => sum + (item.price ?? 0) * quantities[item.id], 0);
-  const wholeSwipes = total > 0 ? Math.ceil(total / SWIPE_VALUE) : 0;
-  const swipeValue = wholeSwipes * SWIPE_VALUE;
+  const maxMealSwipes = Math.min(20, Math.ceil(total / SWIPE_VALUE));
+  const safeMealSwipeCount = Math.min(mealSwipeCount, maxMealSwipes);
+  const swipeValue = Math.round(safeMealSwipeCount * SWIPE_VALUE * 100) / 100;
+  const dirhamRemainder = Math.max(0, Math.round((total - swipeValue) * 100) / 100);
   const unappliedSwipeValue = Math.max(0, Math.round((swipeValue - total) * 100) / 100);
   const topInset = Math.max(insets.top, Platform.OS === 'web' ? 67 : 0);
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'web' ? 34 : 0);
@@ -113,10 +122,6 @@ export default function CheckoutScreen() {
       setFormError('Choose a pickup time to continue.');
       return;
     }
-    if (!selectedPayment) {
-      setFormError('Choose a payment option to continue.');
-      return;
-    }
     setFormError('');
     Keyboard.dismiss();
     try {
@@ -125,7 +130,8 @@ export default function CheckoutScreen() {
           studentName: studentName.trim(),
           pickupDate,
           pickupTime: selectedTime,
-          paymentMethod: selectedPayment,
+          mealSwipeCount: safeMealSwipeCount,
+          balanceAccount,
           items: orderItems.map((item) => ({ itemId: item.id, quantity: quantities[item.id] })),
         },
       });
@@ -133,7 +139,7 @@ export default function CheckoutScreen() {
       await queryClient.invalidateQueries({
         queryKey: getGetPickupSlotsQueryKey({ date: pickupDate }),
       });
-      router.replace(`/order/${order.id}`);
+      router.replace(`/order/${order.confirmationToken}`);
     } catch (error) {
       await queryClient.invalidateQueries({
         queryKey: getGetPickupSlotsQueryKey({ date: pickupDate }),
@@ -249,23 +255,55 @@ export default function CheckoutScreen() {
             <View style={styles.sectionTitleRow}>
               <View style={styles.stepNumber}><Text style={styles.stepNumberText}>3</Text></View>
               <View>
-                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Choose how to pay</Text>
-                <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>Demo selection · no balance is charged</Text>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Split your payment</Text>
+                <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>Demo only · no balance is charged</Text>
               </View>
             </View>
+            <View style={[styles.swipeSelector, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.swipeSelectorCopy}>
+                <Text style={[styles.swipeSelectorTitle, { color: colors.foreground }]}>Meal swipes</Text>
+                <Text style={[styles.swipeSelectorDetail, { color: colors.mutedForeground }]}>
+                  AED 33.60 each · whole swipes only
+                </Text>
+              </View>
+              <View style={[styles.swipeCounter, { backgroundColor: colors.secondary }]}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Use one fewer meal swipe"
+                  testID="meal-swipe-minus"
+                  disabled={safeMealSwipeCount === 0}
+                  onPress={() => setMealSwipeCount((count) => Math.max(0, count - 1))}
+                  style={styles.swipeCounterButton}
+                >
+                  <Feather name="minus" size={16} color={safeMealSwipeCount === 0 ? colors.mutedForeground : colors.primary} />
+                </Pressable>
+                <Text style={[styles.swipeCount, { color: colors.foreground }]}>{safeMealSwipeCount}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Use one more meal swipe"
+                  testID="meal-swipe-plus"
+                  disabled={safeMealSwipeCount >= maxMealSwipes}
+                  onPress={() => setMealSwipeCount((count) => Math.min(maxMealSwipes, count + 1))}
+                  style={styles.swipeCounterButton}
+                >
+                  <Feather name="plus" size={16} color={safeMealSwipeCount >= maxMealSwipes ? colors.mutedForeground : colors.primary} />
+                </Pressable>
+              </View>
+            </View>
+            <Text style={[styles.swipeSummary, { color: colors.mutedForeground }]}>
+              {safeMealSwipeCount} × {money(SWIPE_VALUE)} meal swipes
+              {dirhamRemainder > 0 ? ` · ${money(dirhamRemainder)} remains` : ''}
+            </Text>
             <View style={styles.paymentOptions}>
-              {paymentMethods.map((method) => {
-                const selected = selectedPayment === method.id;
+              {balanceAccounts.map((method) => {
+                const selected = balanceAccount === method.id;
                 return (
                   <Pressable
                     key={method.id}
                     accessibilityRole="radio"
                     accessibilityState={{ selected }}
                     testID={`payment-${method.id}`}
-                    onPress={() => {
-                      setSelectedPayment(method.id);
-                      setFormError('');
-                    }}
+                    onPress={() => setBalanceAccount(method.id)}
                     style={[
                       styles.paymentOption,
                       {
@@ -288,10 +326,10 @@ export default function CheckoutScreen() {
                 );
               })}
             </View>
-            {selectedPayment === 'meal_swipe' && (
+            {safeMealSwipeCount > 0 && (
               <View style={[styles.swipeEstimate, { backgroundColor: colors.accent }]}>
                 <Text style={[styles.swipeEstimateTitle, { color: colors.accentForeground }]}>
-                  {wholeSwipes} whole {wholeSwipes === 1 ? 'swipe' : 'swipes'} · {money(swipeValue)}
+                  {safeMealSwipeCount} whole {safeMealSwipeCount === 1 ? 'swipe' : 'swipes'} · {money(swipeValue)}
                 </Text>
                 {unappliedSwipeValue > 0 ? (
                   <Text style={[styles.swipeEstimateText, { color: colors.accentForeground }]}>
@@ -299,18 +337,28 @@ export default function CheckoutScreen() {
                   </Text>
                 ) : (
                   <Text style={[styles.swipeEstimateText, { color: colors.accentForeground }]}>
-                    Whole swipes only. The campus account isn’t connected in this demo.
+                    {dirhamRemainder > 0 ? `${money(dirhamRemainder)} will be covered by ${balanceAccount === 'flex_dirhams' ? 'Flex' : 'Campus'} dirhams.` : 'No dirham balance is needed for this order.'}
                   </Text>
                 )}
               </View>
             )}
-            {(selectedPayment === 'flex_dirhams' || selectedPayment === 'campus_dirhams') && (
+            {safeMealSwipeCount === 0 && (
               <View style={[styles.swipeEstimate, { backgroundColor: colors.accent }]}>
                 <Text style={[styles.swipeEstimateTitle, { color: colors.accentForeground }]}>
-                  Demo amount · {money(total)}
+                  {money(total)} from {balanceAccount === 'flex_dirhams' ? 'Flex' : 'Campus'} dirhams
                 </Text>
                 <Text style={[styles.swipeEstimateText, { color: colors.accentForeground }]}>
-                  No balance check or charge is made in this preview.
+                  This demo assumes an unlimited balance. No balance check or charge is made.
+                </Text>
+              </View>
+            )}
+            {safeMealSwipeCount > 0 && dirhamRemainder > 0 && (
+              <View style={[styles.swipeEstimate, { backgroundColor: colors.accent }]}>
+                <Text style={[styles.swipeEstimateTitle, { color: colors.accentForeground }]}>
+                  {money(dirhamRemainder)} from {balanceAccount === 'flex_dirhams' ? 'Flex' : 'Campus'} dirhams
+                </Text>
+                <Text style={[styles.swipeEstimateText, { color: colors.accentForeground }]}>
+                  This demo assumes an unlimited balance. No balance check or charge is made.
                 </Text>
               </View>
             )}
@@ -365,11 +413,11 @@ export default function CheckoutScreen() {
         <Pressable
           accessibilityRole="button"
           testID="place-order"
-          disabled={orderMutation.isPending || itemCount === 0 || !selectedPayment || slotsLoading || slotsError}
+          disabled={orderMutation.isPending || itemCount === 0 || slotsLoading || slotsError}
           onPress={placeOrder}
           style={({ pressed }) => [
             styles.placeButton,
-            (orderMutation.isPending || itemCount === 0 || !selectedPayment || slotsLoading || slotsError) && styles.disabledButton,
+            (orderMutation.isPending || itemCount === 0 || slotsLoading || slotsError) && styles.disabledButton,
             pressed && styles.pressed,
           ]}
         >
@@ -425,6 +473,14 @@ const styles = StyleSheet.create({
   payNoteText: { fontSize: 12, fontWeight: '700' },
   payNoteSub: { fontSize: 11, marginLeft: 'auto' },
   paymentOptions: { gap: 9, marginBottom: 9 },
+  swipeSelector: { minHeight: 68, borderRadius: 14, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  swipeSelectorCopy: { flex: 1 },
+  swipeSelectorTitle: { fontSize: 13, fontWeight: '700' },
+  swipeSelectorDetail: { fontSize: 10, marginTop: 4 },
+  swipeCounter: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, minHeight: 38 },
+  swipeCounterButton: { width: 36, height: 38, alignItems: 'center', justifyContent: 'center' },
+  swipeCount: { minWidth: 20, textAlign: 'center', fontSize: 13, fontWeight: '700' },
+  swipeSummary: { fontSize: 10, marginTop: 7, marginBottom: 11 },
   paymentOption: { minHeight: 68, borderRadius: 14, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 9, flexDirection: 'row', alignItems: 'center', gap: 10 },
   paymentIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   paymentCopy: { flex: 1 },

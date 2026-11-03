@@ -10,11 +10,16 @@ import type { PaymentMethod } from './paymentMethod';
 
 export interface Order {
   id: number;
+  confirmationToken: string;
   pickupCode: string;
   studentName: string;
   pickupDate: Date;
   pickupTime: string;
   total: number;
   paymentMethod: PaymentMethod;
+  /** @minimum 0 */
+  mealSwipesUsed: number;
+  /** @minimum 0 */
+  dirhamAmount: number;
   items: OrderLine[];
 }
