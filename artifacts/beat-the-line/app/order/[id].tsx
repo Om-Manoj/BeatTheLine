@@ -81,8 +81,20 @@ export default function OrderConfirmationScreen() {
         </View>
         <Text style={[styles.errorTitle, { color: colors.foreground }]}>Order not found</Text>
         <Text style={[styles.errorCopy, { color: colors.mutedForeground }]}>We couldn’t load this confirmation.</Text>
-        <Pressable onPress={() => refetch()} style={styles.retry}>
-          <Text style={styles.retryText}>Try again</Text>
+        {isValidToken && (
+          <Pressable accessibilityRole="button" onPress={() => refetch()} style={styles.retry}>
+            <Text style={styles.retryText}>Try again</Text>
+          </Pressable>
+        )}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Back to app start"
+          testID="error-back-to-start"
+          onPress={() => router.replace('/')}
+          style={({ pressed }) => [styles.doneButton, styles.errorBackButton, pressed && styles.pressed]}
+        >
+          <Feather name="home" size={17} color="#FFFFFF" />
+          <Text style={styles.doneText}>Back to start</Text>
         </Pressable>
       </View>
     );
@@ -212,4 +224,5 @@ const styles = StyleSheet.create({
   errorCopy: { fontSize: 12, marginTop: 5 },
   retry: { padding: 12, marginTop: 8 },
   retryText: { color: '#287A54', fontWeight: '700', fontSize: 13 },
+  errorBackButton: { marginTop: 12, maxWidth: 300 },
 });
