@@ -1,0 +1,1 @@
+- [BeatTheLine dining rules](dining-order-rules.md) — name-only checkout, pay at pickup, and five orders maximum per 10-minute slot.

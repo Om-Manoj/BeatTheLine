@@ -1,20 +1,29 @@
-// Export your models here. Add one export per file
-// export * from "./posts";
-//
-// Each model/table should ideally be split into different files.
-// Each model/table should define a Drizzle table, insert schema, and types:
-//
-//   import { pgTable, text, serial } from "drizzle-orm/pg-core";
-//   import { createInsertSchema } from "drizzle-zod";
-//   import { z } from "zod/v4";
-//
-//   export const postsTable = pgTable("posts", {
-//     id: serial("id").primaryKey(),
-//     title: text("title").notNull(),
-//   });
-//
-//   export const insertPostSchema = createInsertSchema(postsTable).omit({ id: true });
-//   export type InsertPost = z.infer<typeof insertPostSchema>;
-//   export type Post = typeof postsTable.$inferSelect;
+import {
+  integer,
+  numeric,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
-export {}
+export const orders = pgTable("dining_orders", {
+  id: serial("id").primaryKey(),
+  pickupCode: text("pickup_code").notNull(),
+  studentName: text("student_name").notNull(),
+  pickupDate: text("pickup_date").notNull(),
+  pickupTime: text("pickup_time").notNull(),
+  total: numeric("total", { precision: 10, scale: 2, mode: "number" }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const orderItems = pgTable("dining_order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id")
+    .notNull()
+    .references(() => orders.id, { onDelete: "cascade" }),
+  itemId: text("item_id").notNull(),
+  name: text("name").notNull(),
+  price: numeric("price", { precision: 10, scale: 2, mode: "number" }).notNull(),
+  quantity: integer("quantity").notNull(),
+});
