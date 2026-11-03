@@ -549,7 +549,7 @@ export const getGetStaffOrdersUrl = () => {
 }
 
 /**
- * @summary Get active dining orders for signed-in users
+ * @summary Get active dining orders for signed-in users or development demo access
  */
 export const getStaffOrders = async ( options?: Parameters<typeof customFetch>[1]): Promise<StaffOrder[]> => {
 
@@ -596,7 +596,7 @@ export type GetStaffOrdersQueryError = ErrorType<void>
 
 
 /**
- * @summary Get active dining orders for signed-in users
+ * @summary Get active dining orders for signed-in users or development demo access
  */
 
 export function useGetStaffOrders<TData = Awaited<ReturnType<typeof getStaffOrders>>, TError = ErrorType<void>>(

@@ -134,9 +134,17 @@ paths:
     get:
       operationId: getStaffOrders
       tags: [dining]
-      summary: Get active dining orders for signed-in users
+      summary: Get active dining orders for signed-in users or development demo access
       security:
         - bearerAuth: []
+      parameters:
+        - name: X-Prototype-Staff-Access
+          in: header
+          required: false
+          description: Development-only demo access; ignored outside development mode.
+          schema:
+            type: string
+            enum: [demo]
       responses:
         "200":
           description: Active orders in pickup-time order
@@ -161,6 +169,13 @@ paths:
           required: true
           schema:
             type: integer
+        - name: X-Prototype-Staff-Access
+          in: header
+          required: false
+          description: Development-only demo access; ignored outside development mode.
+          schema:
+            type: string
+            enum: [demo]
       requestBody:
         required: true
         content:

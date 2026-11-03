@@ -47,6 +47,15 @@ export default function StaffSignInScreen() {
 
   const handleSignIn = async () => {
     setFormError('');
+    if (__DEV__) {
+      if (!emailAddress.trim() || !password) {
+        setFormError('Enter any email and password to use development demo access.');
+        return;
+      }
+      setPassword('');
+      router.replace('/staff?demo=true' as Href);
+      return;
+    }
     const { error } = await signIn.password({ emailAddress: emailAddress.trim(), password });
     if (error) {
       setFormError('That email or password could not be verified.');
@@ -161,7 +170,7 @@ export default function StaffSignInScreen() {
             ]}
           >
             {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryButtonText}>
-              {isVerifying ? 'Verify and continue' : 'Sign in'}
+              {isVerifying ? 'Verify and continue' : __DEV__ ? 'Demo sign in' : 'Sign in'}
             </Text>}
           </Pressable>
           {!isVerifying ? (
@@ -175,7 +184,9 @@ export default function StaffSignInScreen() {
         <View style={styles.notice}>
           <Feather name="lock" size={15} color={colors.primary} />
           <Text style={[styles.noticeText, { color: colors.mutedForeground }]}>
-            Any signed-in account can view prototype order names and pickup details.
+            {__DEV__
+              ? 'Development demo only: any non-empty values continue. Credentials are not checked or sent. Anyone with this preview can access orders.'
+              : 'Any signed-in account can view prototype order names and pickup details.'}
           </Text>
         </View>
       </ScrollView>

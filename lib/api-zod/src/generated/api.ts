@@ -151,8 +151,12 @@ export const GetOrderResponse = zod.object({
 
 
 /**
- * @summary Get active dining orders for signed-in users
+ * @summary Get active dining orders for signed-in users or development demo access
  */
+export const GetStaffOrdersHeader = zod.object({
+  "X-Prototype-Staff-Access": zod.enum(['demo']).optional().describe('Development-only demo access; ignored outside development mode.')
+})
+
 export const GetStaffOrdersResponseItem = zod.object({
   "id": zod.number().int(),
   "pickupCode": zod.string(),
@@ -175,6 +179,10 @@ export const GetStaffOrdersResponse = zod.array(GetStaffOrdersResponseItem)
  */
 export const UpdateStaffOrderStatusParams = zod.object({
   "orderId": zod.coerce.number().int()
+})
+
+export const UpdateStaffOrderStatusHeader = zod.object({
+  "X-Prototype-Staff-Access": zod.enum(['demo']).optional().describe('Development-only demo access; ignored outside development mode.')
 })
 
 export const UpdateStaffOrderStatusBody = zod.object({

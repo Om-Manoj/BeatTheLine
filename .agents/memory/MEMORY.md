@@ -1,1 +1,1 @@
-- [BeatTheLine dining rules](dining-order-rules.md) — mock payment choices, sign-in-only staff queue for the prototype, and five orders maximum per slot.
+- [BeatTheLine dining rules](dining-order-rules.md) — mock payment choices, open prototype staff queue with development-only demo access, and five orders per slot.

@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth, useClerk } from '@clerk/expo';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -47,11 +47,13 @@ const errorStatus = (error: unknown) =>
   typeof error === 'object' && error !== null && 'status' in error
     ? Number(error.status)
     : undefined;
+const prototypeStaffHeaders = { 'X-Prototype-Staff-Access': 'demo' };
 
-function OrderCard({ order }: { order: StaffOrder }) {
+function OrderCard({ order, isDemoAccess }: { order: StaffOrder; isDemoAccess: boolean }) {
   const colors = useColors();
   const queryClient = useQueryClient();
   const statusMutation = useUpdateStaffOrderStatus({
+    request: isDemoAccess ? { headers: prototypeStaffHeaders } : undefined,
     mutation: {
       onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetStaffOrdersQueryKey() }),
     },
@@ -125,26 +127,29 @@ export default function StaffQueueScreen() {
   const insets = useSafeAreaInsets();
   const { isLoaded, isSignedIn } = useAuth();
   const { signOut } = useClerk();
+  const { demo } = useLocalSearchParams<{ demo?: string }>();
+  const isDemoAccess = __DEV__ && demo === 'true';
   const { data: orders = [], isLoading, isError, error, refetch, isRefetching } = useGetStaffOrders({
     query: {
-      queryKey: getGetStaffOrdersQueryKey(),
-      enabled: isLoaded && Boolean(isSignedIn),
+      queryKey: [...getGetStaffOrdersQueryKey(), isDemoAccess ? 'demo' : 'clerk'],
+      enabled: isLoaded && (Boolean(isSignedIn) || isDemoAccess),
       refetchInterval: 15000,
     },
+    request: isDemoAccess ? { headers: prototypeStaffHeaders } : undefined,
   });
 
   useEffect(() => {
-    if (isLoaded && !isSignedIn) router.replace('/staff/sign-in');
-  }, [isLoaded, isSignedIn]);
+    if (isLoaded && !isSignedIn && !isDemoAccess) router.replace('/staff/sign-in');
+  }, [isLoaded, isSignedIn, isDemoAccess]);
 
   const signOutOfStaff = async () => {
-    await signOut();
+    if (!isDemoAccess) await signOut();
     router.replace('/');
   };
   const status = errorStatus(error);
   const topInset = Math.max(insets.top, 24);
 
-  if (!isLoaded || !isSignedIn) {
+  if (!isLoaded || (!isSignedIn && !isDemoAccess)) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background, paddingTop: topInset }]}>
         <ActivityIndicator color={colors.primary} />
@@ -168,7 +173,9 @@ export default function StaffQueueScreen() {
       <View style={[styles.liveBanner, { backgroundColor: colors.secondary }]}>
         <View style={styles.liveDot} />
         <Text style={[styles.liveText, { color: colors.foreground }]}>
-          Prototype queue · any signed-in account can view · refreshes every 15 seconds
+          {isDemoAccess
+            ? 'Development demo · credentials not checked · preview access is open'
+            : 'Prototype queue · any signed-in account can view · refreshes every 15 seconds'}
         </Text>
       </View>
       {isLoading ? (
@@ -208,7 +215,7 @@ export default function StaffQueueScreen() {
             {orders.length} active {orders.length === 1 ? 'order' : 'orders'}
           </Text>
           {orders.length ? (
-            orders.map((order) => <OrderCard key={order.id} order={order} />)
+            orders.map((order) => <OrderCard key={order.id} order={order} isDemoAccess={isDemoAccess} />)
           ) : (
             <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Feather name="check-circle" size={26} color={colors.primary} />
