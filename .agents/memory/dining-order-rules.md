@@ -3,7 +3,7 @@ name: BeatTheLine dining rules
 description: Product constraints for student pickup ordering.
 ---
 
-Checkout collects the student's name and a mock payment-method choice; no payment is charged. Flex and Campus balances are unlimited in this demo. Meal swipes are AED 33.60 each and can only be used whole. Whole-swipe change/rollover policy is unspecified. NetID is a visual sign-in preview only: do not collect credentials or claim an account is linked until official university SSO is configured. Pickup times run every 10 minutes from 11:30 AM through 1:30 PM, with a maximum of five orders per slot.
+Checkout collects the student's name and a mock payment-method choice; no payment is charged. Flex and Campus balances are unlimited in this demo. Meal swipes are AED 33.60 each, can only be used whole, and any unused value is discarded. NetID is a visual sign-in preview only: do not collect credentials or claim an account is linked until official university SSO is configured. Pickup times run every 10 minutes from 11:30 AM through 1:30 PM, with a maximum of five orders per slot.
 
 The prototype staff queue requires an app sign-in, but has no staff allow-list or role approval: any signed-in account can view and update live orders. Treat this as demo-only, not appropriate for real student order data.
 

@@ -333,7 +333,7 @@ export default function CheckoutScreen() {
                 </Text>
                 {unappliedSwipeValue > 0 ? (
                   <Text style={[styles.swipeEstimateText, { color: colors.accentForeground }]}>
-                    {money(unappliedSwipeValue)} is above this order total. Change and rollover rules depend on the campus.
+                    {money(unappliedSwipeValue)} is unused and discarded. Meal swipes can’t be split or saved as change.
                   </Text>
                 ) : (
                   <Text style={[styles.swipeEstimateText, { color: colors.accentForeground }]}>
