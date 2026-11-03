@@ -201,6 +201,7 @@ router.post("/orders", async (req, res) => {
           studentName,
           pickupDate,
           pickupTime,
+          paymentMethod: input.paymentMethod,
           total,
         })
         .returning({ id: orders.id });
@@ -225,6 +226,7 @@ router.post("/orders", async (req, res) => {
       studentName,
       pickupDate,
       pickupTime,
+      paymentMethod: input.paymentMethod,
       total,
       items: validItems.map(({ itemId, name, price, quantity }) => ({
         itemId,
@@ -265,6 +267,7 @@ router.get("/orders/:orderId", async (req, res) => {
       studentName: order.studentName,
       pickupDate: order.pickupDate,
       pickupTime: order.pickupTime,
+      paymentMethod: order.paymentMethod,
       total: order.total,
       items,
     });

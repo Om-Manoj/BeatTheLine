@@ -80,6 +80,7 @@ export const CreateOrderBody = zod.object({
   "studentName": zod.string().min(1).max(createOrderBodyStudentNameMax),
   "pickupDate": zod.coerce.date(),
   "pickupTime": zod.string().regex(createOrderBodyPickupTimeRegExp),
+  "paymentMethod": zod.enum(['meal_swipe', 'flex_dirhams', 'campus_dirhams', 'pay_at_pickup']),
   "items": zod.array(zod.object({
   "itemId": zod.string(),
   "quantity": zod.number().int().min(1).max(createOrderBodyItemsItemQuantityMax)
@@ -93,6 +94,7 @@ export const CreateOrderResponse = zod.object({
   "pickupDate": zod.coerce.date(),
   "pickupTime": zod.string(),
   "total": zod.number(),
+  "paymentMethod": zod.enum(['meal_swipe', 'flex_dirhams', 'campus_dirhams', 'pay_at_pickup']),
   "items": zod.array(zod.object({
   "itemId": zod.string(),
   "name": zod.string(),
@@ -116,6 +118,7 @@ export const GetOrderResponse = zod.object({
   "pickupDate": zod.coerce.date(),
   "pickupTime": zod.string(),
   "total": zod.number(),
+  "paymentMethod": zod.enum(['meal_swipe', 'flex_dirhams', 'campus_dirhams', 'pay_at_pickup']),
   "items": zod.array(zod.object({
   "itemId": zod.string(),
   "name": zod.string(),

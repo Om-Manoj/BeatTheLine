@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OrderLine } from './orderLine';
+import type { PaymentMethod } from './paymentMethod';
 
 export interface Order {
   id: number;
@@ -14,5 +15,6 @@ export interface Order {
   pickupDate: Date;
   pickupTime: string;
   total: number;
+  paymentMethod: PaymentMethod;
   items: OrderLine[];
 }

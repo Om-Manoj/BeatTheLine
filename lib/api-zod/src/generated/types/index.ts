@@ -14,5 +14,6 @@ export * from './order';
 export * from './orderInput';
 export * from './orderLine';
 export * from './orderLineInput';
+export * from './paymentMethod';
 export * from './pickupSlot';
 export * from './restaurant';

@@ -13,6 +13,7 @@ export const orders = pgTable("dining_orders", {
   studentName: text("student_name").notNull(),
   pickupDate: text("pickup_date").notNull(),
   pickupTime: text("pickup_time").notNull(),
+  paymentMethod: text("payment_method").notNull().default("pay_at_pickup"),
   total: numeric("total", { precision: 10, scale: 2, mode: "number" }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });

@@ -47,6 +47,16 @@ export interface OrderLineInput {
   quantity: number;
 }
 
+export type PaymentMethod = typeof PaymentMethod[keyof typeof PaymentMethod];
+
+
+export const PaymentMethod = {
+  meal_swipe: 'meal_swipe',
+  flex_dirhams: 'flex_dirhams',
+  campus_dirhams: 'campus_dirhams',
+  pay_at_pickup: 'pay_at_pickup',
+} as const;
+
 export interface OrderInput {
   /**
      * @minLength 1
@@ -56,6 +66,7 @@ export interface OrderInput {
   pickupDate: string;
   /** @pattern ^(11:(30|40|50)|12:([0-5]0)|13:([0-2]0|30))$ */
   pickupTime: string;
+  paymentMethod: PaymentMethod;
   /** @minItems 1 */
   items: OrderLineInput[];
 }
@@ -74,6 +85,7 @@ export interface Order {
   pickupDate: string;
   pickupTime: string;
   total: number;
+  paymentMethod: PaymentMethod;
   items: OrderLine[];
 }
 

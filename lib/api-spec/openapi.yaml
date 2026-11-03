@@ -173,18 +173,23 @@ components:
         quantity: { type: integer, minimum: 1, maximum: 20 }
     OrderInput:
       type: object
-      required: [studentName, pickupDate, pickupTime, items]
+      required: [studentName, pickupDate, pickupTime, items, paymentMethod]
       properties:
         studentName: { type: string, minLength: 1, maxLength: 80 }
         pickupDate: { type: string, format: date }
         pickupTime:
           type: string
           pattern: "^(11:(30|40|50)|12:([0-5]0)|13:([0-2]0|30))$"
+        paymentMethod:
+          $ref: "#/components/schemas/PaymentMethod"
         items:
           type: array
           minItems: 1
           items:
             $ref: "#/components/schemas/OrderLineInput"
+    PaymentMethod:
+      type: string
+      enum: [meal_swipe, flex_dirhams, campus_dirhams, pay_at_pickup]
     OrderLine:
       type: object
       required: [itemId, name, price, quantity]
@@ -195,7 +200,7 @@ components:
         quantity: { type: integer }
     Order:
       type: object
-      required: [id, pickupCode, studentName, pickupDate, pickupTime, total, items]
+      required: [id, pickupCode, studentName, pickupDate, pickupTime, total, items, paymentMethod]
       properties:
         id: { type: integer }
         pickupCode: { type: string }
@@ -203,6 +208,8 @@ components:
         pickupDate: { type: string, format: date }
         pickupTime: { type: string }
         total: { type: number }
+        paymentMethod:
+          $ref: "#/components/schemas/PaymentMethod"
         items:
           type: array
           items:

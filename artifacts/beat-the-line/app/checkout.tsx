@@ -19,7 +19,7 @@ import {
   useGetMenu,
   useGetPickupSlots,
 } from '@workspace/api-client-react';
-import type { PickupSlot } from '@workspace/api-client-react';
+import type { PaymentMethod, PickupSlot } from '@workspace/api-client-react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '@/context/cart-context';
 import { useColors } from '@/hooks/useColors';
@@ -29,6 +29,14 @@ const formatDate = () => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 const money = (value: number) => `AED ${value.toFixed(2)}`;
+const SWIPE_VALUE = 33.6;
+const paymentMethods: { id: Exclude<PaymentMethod, 'pay_at_pickup'>; name: string; detail: string; icon: 'credit-card' | 'dollar-sign' | 'book-open' }[] = [
+  { id: 'meal_swipe', name: 'Meal swipes', detail: 'Whole swipes · AED 33.60 each', icon: 'credit-card' },
+  { id: 'flex_dirhams', name: 'Flex dirhams', detail: 'Pay the exact amount from Flex', icon: 'dollar-sign' },
+  { id: 'campus_dirhams', name: 'Campus dirhams', detail: 'Pay the exact amount from Campus', icon: 'book-open' },
+];
+const paymentName = (method: PaymentMethod) =>
+  paymentMethods.find((option) => option.id === method)?.name ?? 'Pay at pickup';
 const prettyTime = (time: string) => {
   const [hourText, minute] = time.split(':');
   const hour = Number(hourText);
@@ -81,6 +89,8 @@ export default function CheckoutScreen() {
   const { data: slots = [], isLoading: slotsLoading, isError: slotsError, refetch } =
     useGetPickupSlots({ date: pickupDate });
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<Exclude<PaymentMethod, 'pay_at_pickup'> | null>(null);
+  const [showNetIdPreview, setShowNetIdPreview] = useState(false);
   const [studentName, setStudentName] = useState('');
   const [formError, setFormError] = useState('');
   const orderMutation = useCreateOrder();
@@ -88,6 +98,9 @@ export default function CheckoutScreen() {
     (item) => item.available && item.price !== null && (quantities[item.id] ?? 0) > 0,
   );
   const total = orderItems.reduce((sum, item) => sum + (item.price ?? 0) * quantities[item.id], 0);
+  const wholeSwipes = total > 0 ? Math.ceil(total / SWIPE_VALUE) : 0;
+  const swipeValue = wholeSwipes * SWIPE_VALUE;
+  const unappliedSwipeValue = Math.max(0, Math.round((swipeValue - total) * 100) / 100);
   const topInset = Math.max(insets.top, Platform.OS === 'web' ? 67 : 0);
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'web' ? 34 : 0);
 
@@ -100,6 +113,10 @@ export default function CheckoutScreen() {
       setFormError('Choose a pickup time to continue.');
       return;
     }
+    if (!selectedPayment) {
+      setFormError('Choose a payment option to continue.');
+      return;
+    }
     setFormError('');
     Keyboard.dismiss();
     try {
@@ -108,6 +125,7 @@ export default function CheckoutScreen() {
           studentName: studentName.trim(),
           pickupDate,
           pickupTime: selectedTime,
+          paymentMethod: selectedPayment,
           items: orderItems.map((item) => ({ itemId: item.id, quantity: quantities[item.id] })),
         },
       });
@@ -228,10 +246,115 @@ export default function CheckoutScreen() {
                 <Text style={[styles.totalValue, { color: colors.foreground }]}>{money(total)}</Text>
               </View>
             </View>
+            <View style={styles.sectionTitleRow}>
+              <View style={styles.stepNumber}><Text style={styles.stepNumberText}>3</Text></View>
+              <View>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Choose how to pay</Text>
+                <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>Demo selection · no balance is charged</Text>
+              </View>
+            </View>
+            <View style={styles.paymentOptions}>
+              {paymentMethods.map((method) => {
+                const selected = selectedPayment === method.id;
+                return (
+                  <Pressable
+                    key={method.id}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}
+                    testID={`payment-${method.id}`}
+                    onPress={() => {
+                      setSelectedPayment(method.id);
+                      setFormError('');
+                    }}
+                    style={[
+                      styles.paymentOption,
+                      {
+                        backgroundColor: selected ? colors.secondary : colors.card,
+                        borderColor: selected ? colors.primary : colors.border,
+                      },
+                    ]}
+                  >
+                    <View style={[styles.paymentIcon, { backgroundColor: selected ? colors.card : colors.muted }]}>
+                      <Feather name={method.icon} size={18} color={colors.primary} />
+                    </View>
+                    <View style={styles.paymentCopy}>
+                      <Text style={[styles.paymentName, { color: colors.foreground }]}>{method.name}</Text>
+                      <Text style={[styles.paymentDetail, { color: colors.mutedForeground }]}>{method.detail}</Text>
+                    </View>
+                    <View style={[styles.radioOuter, { borderColor: selected ? colors.primary : colors.border }]}>
+                      {selected && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {selectedPayment === 'meal_swipe' && (
+              <View style={[styles.swipeEstimate, { backgroundColor: colors.accent }]}>
+                <Text style={[styles.swipeEstimateTitle, { color: colors.accentForeground }]}>
+                  {wholeSwipes} whole {wholeSwipes === 1 ? 'swipe' : 'swipes'} · {money(swipeValue)}
+                </Text>
+                {unappliedSwipeValue > 0 ? (
+                  <Text style={[styles.swipeEstimateText, { color: colors.accentForeground }]}>
+                    {money(unappliedSwipeValue)} is above this order total. Change and rollover rules depend on the campus.
+                  </Text>
+                ) : (
+                  <Text style={[styles.swipeEstimateText, { color: colors.accentForeground }]}>
+                    Whole swipes only. The campus account isn’t connected in this demo.
+                  </Text>
+                )}
+              </View>
+            )}
+            {(selectedPayment === 'flex_dirhams' || selectedPayment === 'campus_dirhams') && (
+              <View style={[styles.swipeEstimate, { backgroundColor: colors.accent }]}>
+                <Text style={[styles.swipeEstimateTitle, { color: colors.accentForeground }]}>
+                  Demo amount · {money(total)}
+                </Text>
+                <Text style={[styles.swipeEstimateText, { color: colors.accentForeground }]}>
+                  No balance check or charge is made in this preview.
+                </Text>
+              </View>
+            )}
+            <View style={[styles.netIdCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.netIdHeading}>
+                <View style={[styles.netIdIcon, { backgroundColor: colors.secondary }]}>
+                  <Feather name="shield" size={17} color={colors.primary} />
+                </View>
+                <View style={styles.netIdCopy}>
+                  <Text style={[styles.netIdTitle, { color: colors.foreground }]}>University NetID</Text>
+                  <Text style={[styles.netIdSub, { color: colors.mutedForeground }]}>Link to access campus balances</Text>
+                </View>
+                <View style={[styles.notLinkedPill, { backgroundColor: colors.muted }]}>
+                  <Text style={[styles.notLinkedText, { color: colors.mutedForeground }]}>NOT LINKED</Text>
+                </View>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                testID="preview-netid-link"
+                onPress={() => setShowNetIdPreview((shown) => !shown)}
+                style={({ pressed }) => [
+                  styles.netIdButton,
+                  { borderColor: colors.border, backgroundColor: colors.background },
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Feather name={showNetIdPreview ? 'check' : 'external-link'} size={15} color={colors.primary} />
+                <Text style={[styles.netIdButtonText, { color: colors.primary }]}>
+                  {showNetIdPreview ? 'Hide sign-in preview' : 'Preview NetID sign-in'}
+                </Text>
+              </Pressable>
+              {showNetIdPreview && (
+                <View style={[styles.netIdPreview, { backgroundColor: colors.secondary }]}>
+                  <Text style={[styles.netIdPreviewTitle, { color: colors.foreground }]}>University sign-in</Text>
+                  <Text style={[styles.netIdPreviewText, { color: colors.mutedForeground }]}>
+                    In the live app, you’d continue to your university’s secure NetID login. This preview doesn’t collect credentials or link an account.
+                  </Text>
+                </View>
+              )}
+            </View>
             <View style={[styles.payNote, { backgroundColor: colors.secondary }]}>
               <Feather name="info" size={16} color={colors.primary} />
-              <Text style={[styles.payNoteText, { color: colors.foreground }]}>Pay at pickup</Text>
-              <Text style={[styles.payNoteSub, { color: colors.mutedForeground }]}>No payment needed now</Text>
+              <Text style={[styles.payNoteText, { color: colors.foreground }]}>Preview only</Text>
+              <Text style={[styles.payNoteSub, { color: colors.mutedForeground }]}>No charge</Text>
             </View>
             {formError ? <Text accessibilityRole="alert" style={[styles.formError, { color: colors.destructive }]}>{formError}</Text> : null}
           </>
@@ -242,11 +365,11 @@ export default function CheckoutScreen() {
         <Pressable
           accessibilityRole="button"
           testID="place-order"
-          disabled={orderMutation.isPending || itemCount === 0 || slotsLoading || slotsError}
+          disabled={orderMutation.isPending || itemCount === 0 || !selectedPayment || slotsLoading || slotsError}
           onPress={placeOrder}
           style={({ pressed }) => [
             styles.placeButton,
-            (orderMutation.isPending || itemCount === 0 || slotsLoading || slotsError) && styles.disabledButton,
+            (orderMutation.isPending || itemCount === 0 || !selectedPayment || slotsLoading || slotsError) && styles.disabledButton,
             pressed && styles.pressed,
           ]}
         >
@@ -260,7 +383,7 @@ export default function CheckoutScreen() {
             </>
           )}
         </Pressable>
-        <Text style={[styles.footerText, { color: colors.mutedForeground }]}>Pay at pickup · No card needed</Text>
+        <Text style={[styles.footerText, { color: colors.mutedForeground }]}>Payment selection only · no real account connected</Text>
       </View>
     </View>
   );
@@ -301,6 +424,30 @@ const styles = StyleSheet.create({
   payNote: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 12, marginTop: 12 },
   payNoteText: { fontSize: 12, fontWeight: '700' },
   payNoteSub: { fontSize: 11, marginLeft: 'auto' },
+  paymentOptions: { gap: 9, marginBottom: 9 },
+  paymentOption: { minHeight: 68, borderRadius: 14, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 9, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  paymentIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  paymentCopy: { flex: 1 },
+  paymentName: { fontSize: 13, fontWeight: '700' },
+  paymentDetail: { fontSize: 10, marginTop: 4 },
+  radioOuter: { height: 20, width: 20, borderRadius: 10, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  radioInner: { height: 10, width: 10, borderRadius: 5 },
+  swipeEstimate: { borderRadius: 12, padding: 12, marginBottom: 13 },
+  swipeEstimateTitle: { fontSize: 12, fontWeight: '700' },
+  swipeEstimateText: { fontSize: 10, lineHeight: 15, marginTop: 4 },
+  netIdCard: { borderWidth: 1, borderRadius: 15, padding: 12, marginTop: 4 },
+  netIdHeading: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  netIdIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  netIdCopy: { flex: 1 },
+  netIdTitle: { fontSize: 12, fontWeight: '700' },
+  netIdSub: { fontSize: 10, marginTop: 3 },
+  notLinkedPill: { borderRadius: 10, paddingHorizontal: 7, paddingVertical: 5 },
+  notLinkedText: { fontSize: 8, fontWeight: '700', letterSpacing: 0.4 },
+  netIdButton: { minHeight: 39, borderWidth: 1, borderRadius: 11, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', marginTop: 11 },
+  netIdButtonText: { fontSize: 11, fontWeight: '600' },
+  netIdPreview: { borderRadius: 10, padding: 10, marginTop: 10 },
+  netIdPreviewTitle: { fontSize: 11, fontWeight: '700' },
+  netIdPreviewText: { fontSize: 10, lineHeight: 15, marginTop: 4 },
   formError: { marginTop: 10, fontSize: 12, fontWeight: '600' },
   bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 18, paddingTop: 12, backgroundColor: 'rgba(248,248,241,0.98)' },
   placeButton: { minHeight: 55, borderRadius: 16, backgroundColor: '#287A54', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 17 },

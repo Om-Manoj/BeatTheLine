@@ -11,10 +11,17 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { getGetOrderQueryKey, useGetOrder } from '@workspace/api-client-react';
+import type { PaymentMethod } from '@workspace/api-client-react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 
 const money = (value: number) => `AED ${value.toFixed(2)}`;
+const paymentName = (method: PaymentMethod) => ({
+  meal_swipe: 'Meal swipes',
+  flex_dirhams: 'Flex dirhams',
+  campus_dirhams: 'Campus dirhams',
+  pay_at_pickup: 'Pay at pickup',
+})[method];
 const prettyTime = (time: string) => {
   const [hourText, minute] = time.split(':');
   const hour = Number(hourText);
@@ -105,9 +112,19 @@ export default function OrderConfirmationScreen() {
             <Text style={[styles.totalValue, { color: colors.foreground }]}>{money(order.total)}</Text>
           </View>
         </View>
+        <View style={[styles.paymentCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.paymentHeader}>
+            <Feather name="credit-card" size={16} color={colors.primary} />
+            <Text style={[styles.paymentEyebrow, { color: colors.mutedForeground }]}>PAYMENT OPTION · DEMO</Text>
+          </View>
+          <Text style={[styles.paymentMethod, { color: colors.foreground }]}>{paymentName(order.paymentMethod)}</Text>
+          <Text style={[styles.paymentNote, { color: colors.mutedForeground }]}>
+            No balance was charged. Payment is still due at pickup.
+          </Text>
+        </View>
         <View style={styles.tip}>
           <Feather name="info" size={15} color={colors.primary} />
-          <Text style={[styles.tipText, { color: colors.mutedForeground }]}>Head to the pickup counter at your selected time. Payment is due there.</Text>
+          <Text style={[styles.tipText, { color: colors.mutedForeground }]}>NetID linking and campus payment are only previews here. No credentials are collected.</Text>
         </View>
         <Pressable
           accessibilityRole="button"
@@ -153,6 +170,11 @@ const styles = StyleSheet.create({
   divider: { height: 1, marginVertical: 8 },
   totalLabel: { fontSize: 12, fontWeight: '700' },
   totalValue: { fontSize: 14, fontWeight: '700' },
+  paymentCard: { width: '100%', borderWidth: 1, borderRadius: 15, padding: 14, marginTop: 12 },
+  paymentHeader: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  paymentEyebrow: { fontSize: 9, fontWeight: '700', letterSpacing: 0.6 },
+  paymentMethod: { fontSize: 14, fontWeight: '700', marginTop: 9 },
+  paymentNote: { fontSize: 10, lineHeight: 15, marginTop: 4 },
   tip: { width: '100%', flexDirection: 'row', gap: 8, alignItems: 'flex-start', marginTop: 14, marginBottom: 16, paddingHorizontal: 2 },
   tipText: { flex: 1, fontSize: 11, lineHeight: 16 },
   doneButton: { width: '100%', height: 52, backgroundColor: '#287A54', borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
