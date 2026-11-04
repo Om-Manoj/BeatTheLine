@@ -43,6 +43,21 @@ const formatTime = (time: string) => {
   const hour = Number(hourText);
   return `${hour > 12 ? hour - 12 : hour}:${minute} ${hour >= 12 ? 'PM' : 'AM'}`;
 };
+const minutesOfDay = (time: string) => {
+  const [hour, minute] = time.split(':').map(Number);
+  return hour * 60 + minute;
+};
+const groupOrdersByPickupTime = (orders: StaffOrder[]) => {
+  const groups = new Map<string, StaffOrder[]>();
+  orders.forEach((order) => {
+    const slotOrders = groups.get(order.pickupTime) ?? [];
+    slotOrders.push(order);
+    groups.set(order.pickupTime, slotOrders);
+  });
+
+  return Array.from(groups, ([pickupTime, slotOrders]) => ({ pickupTime, orders: slotOrders }))
+    .sort((a, b) => minutesOfDay(a.pickupTime) - minutesOfDay(b.pickupTime));
+};
 const errorStatus = (error: unknown) =>
   typeof error === 'object' && error !== null && 'status' in error
     ? Number(error.status)
@@ -146,6 +161,7 @@ export default function StaffQueueScreen() {
     if (!isDemoAccess) await signOut();
     router.replace('/');
   };
+  const pickupSlots = groupOrdersByPickupTime(orders);
   const status = errorStatus(error);
   const topInset = Math.max(insets.top, 24);
 
@@ -215,7 +231,26 @@ export default function StaffQueueScreen() {
             {orders.length} active {orders.length === 1 ? 'order' : 'orders'}
           </Text>
           {orders.length ? (
-            orders.map((order) => <OrderCard key={order.id} order={order} isDemoAccess={isDemoAccess} />)
+            pickupSlots.map((slot) => (
+              <View key={slot.pickupTime} style={styles.slotSection}>
+                <View style={styles.slotHeader}>
+                  <View style={styles.slotTitleGroup}>
+                    <Feather name="clock" size={16} color={colors.primary} />
+                    <Text style={[styles.slotTitle, { color: colors.foreground }]}>
+                      {formatTime(slot.pickupTime)}
+                    </Text>
+                  </View>
+                  <View style={[styles.slotCountBadge, { backgroundColor: colors.secondary }]}>
+                    <Text style={[styles.slotCountText, { color: colors.foreground }]}>
+                      {slot.orders.length} {slot.orders.length === 1 ? 'order' : 'orders'}
+                    </Text>
+                  </View>
+                </View>
+                {slot.orders.map((order) => (
+                  <OrderCard key={order.id} order={order} isDemoAccess={isDemoAccess} />
+                ))}
+              </View>
+            ))
           ) : (
             <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Feather name="check-circle" size={26} color={colors.primary} />
@@ -243,6 +278,12 @@ const styles = StyleSheet.create({
   liveText: { fontSize: 11, fontWeight: '600' },
   list: { paddingBottom: 24 },
   count: { fontSize: 12, fontWeight: '600', marginBottom: 8 },
+  slotSection: { marginBottom: 7 },
+  slotHeader: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, paddingHorizontal: 2 },
+  slotTitleGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  slotTitle: { fontSize: 17, fontWeight: '800' },
+  slotCountBadge: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 },
+  slotCountText: { fontSize: 11, fontWeight: '700' },
   orderCard: { borderWidth: 1, borderRadius: 17, padding: 14, marginBottom: 11 },
   orderTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 },
   orderIdentity: { flex: 1 },
