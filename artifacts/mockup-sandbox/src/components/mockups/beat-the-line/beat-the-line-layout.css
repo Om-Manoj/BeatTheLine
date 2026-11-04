@@ -1,0 +1,90 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+
+.bt-layout {
+  --bt-ink: #183a2c;
+  --bt-green: #287a54;
+  --bt-muted: #6b786d;
+  --bt-paper: #f8f8f1;
+  --bt-line: #dfe5d9;
+  --bt-sun: #f2cf79;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  overflow: hidden;
+  padding: 26px 25px 22px;
+  color: var(--bt-ink);
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(219, 231, 207, .52), transparent 31%),
+    var(--bt-paper);
+  font-family: "DM Sans", sans-serif;
+}
+
+.bt-layout *, .bt-layout *::before, .bt-layout *::after { box-sizing: border-box; }
+.bt-topbar { display:flex; align-items:center; justify-content:space-between; }
+.bt-wordmark { display:flex; align-items:center; gap:9px; font:800 15px/1 "Manrope", sans-serif; letter-spacing:-.6px; }
+.bt-mark { width:25px; height:25px; display:grid; place-items:center; border-radius:9px 9px 9px 3px; background:var(--bt-green); transform:rotate(-6deg); }
+.bt-mark span { width:9px; height:9px; border:2px solid #f8f8f1; border-radius:50%; position:relative; }
+.bt-mark span::after { position:absolute; content:""; width:4px; height:2px; right:-4px; top:1px; background:#f8f8f1; transform:rotate(45deg); }
+.bt-campus { color:#7d897c; font-size:8px; font-weight:700; letter-spacing:1.45px; }
+
+.bt-intro { padding-top:37px; }
+.bt-kicker { display:flex; align-items:center; gap:8px; color:var(--bt-green); font-size:10px; font-weight:700; letter-spacing:.55px; }
+.bt-kicker span { width:6px; height:6px; border-radius:50%; background:var(--bt-sun); box-shadow:0 0 0 4px rgba(242,207,121,.19); }
+.bt-intro h1 { margin:16px 0 9px; font:800 clamp(47px, 13vw, 61px)/.98 "Manrope", sans-serif; letter-spacing:-4px; }
+.bt-intro h1 em { color:var(--bt-green); font-style:normal; }
+.bt-intro > p { max-width:290px; margin:0; color:var(--bt-muted); font-size:13px; line-height:1.6; }
+.bt-pickup-note { display:flex; align-items:center; gap:11px; margin-top:22px; padding:12px 13px; border:1px solid rgba(40,122,84,.12); border-radius:13px; background:rgba(255,255,255,.52); }
+.bt-clock { width:32px; height:32px; display:grid; place-items:center; flex:none; border-radius:10px; background:#e8f0e6; color:var(--bt-green); }
+.bt-clock svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.bt-pickup-note > span:nth-child(2) { display:flex; flex-direction:column; gap:3px; }
+.bt-pickup-note b { font-size:10px; font-weight:700; }
+.bt-pickup-note small { color:var(--bt-muted); font-size:9px; }
+.bt-note-index { margin-left:auto; color:#a0a99e; font:600 8px "Manrope", sans-serif; letter-spacing:.4px; white-space:nowrap; }
+
+.bt-choice-section { margin-top:29px; }
+.bt-section-heading { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.bt-step { color:var(--bt-green); font:800 10px "Manrope", sans-serif; }
+.bt-section-heading h2 { margin:0; font:700 16px "Manrope", sans-serif; letter-spacing:-.55px; }
+.bt-order-card { position:relative; display:block; width:100%; overflow:hidden; padding:15px 16px 16px; border:0; border-radius:19px; background:#214b37; color:#fffaf0; text-align:left; cursor:pointer; transition:transform .2s ease, background-color .2s ease; }
+.bt-order-card:active, .bt-staff-row:active { transform:scale(.985); }
+.bt-order-card.is-selected { background:#287a54; }
+.bt-card-topline { position:relative; z-index:1; display:flex; justify-content:space-between; color:#bed3bb; font-size:8px; font-weight:700; letter-spacing:1.35px; }
+.bt-card-topline span:last-child { color:#d4e0ce; font:600 9px "Manrope", sans-serif; }
+.bt-order-row { position:relative; z-index:1; display:flex; align-items:center; gap:13px; margin-top:16px; }
+.bt-bag-icon { display:grid; width:43px; height:43px; place-items:center; flex:none; border-radius:14px; background:rgba(248,248,241,.12); color:#f1d58f; }
+.bt-bag-icon svg, .bt-staff-icon svg, .bt-order-arrow svg, .bt-staff-arrow svg { width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.bt-order-copy { display:flex; flex:1; flex-direction:column; gap:5px; }
+.bt-order-copy strong { font:700 18px/1.08 "Manrope", sans-serif; letter-spacing:-.55px; }
+.bt-order-copy small { color:#d4dfd0; font-size:9px; line-height:1.45; }
+.bt-order-arrow { display:grid; width:32px; height:32px; place-items:center; flex:none; border:1px solid rgba(255,255,255,.25); border-radius:50%; }
+.bt-order-arrow svg, .bt-staff-arrow svg { width:16px; height:16px; }
+.bt-card-orbit { position:absolute; right:-36px; bottom:-72px; width:155px; height:155px; border:1px solid rgba(255,255,255,.08); border-radius:50%; }
+.bt-card-orbit::before, .bt-card-orbit::after { position:absolute; content:""; border:1px solid rgba(255,255,255,.08); border-radius:50%; }
+.bt-card-orbit::before { inset:15px; }
+.bt-card-orbit::after { inset:31px; }
+.bt-feedback { position:relative; z-index:1; display:block; margin:12px 0 1px 56px; color:#e3eedc; font-size:9px; }
+
+.bt-staff-row { display:flex; width:100%; align-items:center; gap:12px; margin-top:10px; padding:13px 12px; border:1px solid var(--bt-line); border-radius:15px; background:rgba(255,255,255,.55); color:var(--bt-ink); text-align:left; cursor:pointer; transition:transform .2s ease, background-color .2s ease, border-color .2s ease; }
+.bt-staff-row.is-selected { border-color:#a9c2a9; background:#eff4ea; }
+.bt-staff-icon { display:grid; width:34px; height:34px; place-items:center; flex:none; border-radius:11px; background:#f7edda; color:#956b29; }
+.bt-staff-icon svg { width:18px; height:18px; }
+.bt-staff-copy { display:flex; min-width:0; flex:1; flex-direction:column; gap:3px; }
+.bt-staff-copy strong { font:700 12px "Manrope", sans-serif; letter-spacing:-.2px; }
+.bt-staff-copy small { color:var(--bt-muted); font-size:8.5px; line-height:1.45; }
+.bt-staff-arrow { color:var(--bt-green); }
+.bt-staff-feedback { margin:8px 2px 0 47px; color:var(--bt-green); font-size:9px; }
+.bt-footer { display:flex; align-items:center; gap:9px; margin-top:18px; color:#849083; font-size:8px; line-height:1.45; }
+.bt-footer-rule { width:18px; height:1px; flex:none; background:#afbdac; }
+
+@media (min-height: 850px) {
+  .bt-layout { padding-top:31px; }
+  .bt-intro { padding-top:48px; }
+  .bt-choice-section { margin-top:34px; }
+}
+@media (max-width: 360px) {
+  .bt-layout { padding:22px 19px 20px; }
+  .bt-intro h1 { letter-spacing:-3.2px; }
+  .bt-order-row { gap:10px; }
+  .bt-order-copy strong { font-size:16px; }
+  .bt-note-index { display:none; }
+}
