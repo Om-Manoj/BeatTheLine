@@ -1,8 +1,9 @@
 import { Router, type IRouter } from "express";
+import { randomUUID } from "node:crypto";
 import { and, count, eq, inArray, sql } from "drizzle-orm";
-import { CreateOrderBody } from "@workspace/api-zod";
+import { CreateMenuItemBody, CreateOrderBody, UpdateMenuItemBody } from "@workspace/api-zod";
 import { db } from "@workspace/db";
-import { orderItems, orders } from "@workspace/db/schema";
+import { menuItems, orderItems, orders } from "@workspace/db/schema";
 import { logger } from "../lib/logger";
 import { requireSignedIn } from "../middlewares/staffAccess";
 
@@ -130,13 +131,165 @@ const makePickupCode = (id: number) => {
   return `${letter}${String(id % 100).padStart(2, "0")}`;
 };
 
-router.get("/menu", (_req, res) => {
-  res.json(menu);
+let menuSeedPromise: Promise<void> | undefined;
+const ensureMenuSeeded = () => {
+  if (!menuSeedPromise) {
+    menuSeedPromise = (async () => {
+      const [existing] = await db.select({ id: menuItems.id }).from(menuItems).limit(1);
+      if (!existing) {
+        await db
+          .insert(menuItems)
+          .values(menu.map((item, sortOrder) => ({ ...item, sortOrder })))
+          .onConflictDoNothing();
+      }
+    })().catch((error: unknown) => {
+      menuSeedPromise = undefined;
+      throw error;
+    });
+  }
+  return menuSeedPromise;
+};
+
+const itemResponse = (item: typeof menuItems.$inferSelect) => ({
+  id: item.id,
+  name: item.name,
+  description: item.description,
+  price: item.price,
+  vegetarian: item.vegetarian,
+  imageKey: item.imageKey,
+  restaurantId: item.restaurantId,
+  restaurant: item.restaurant,
+  category: item.category,
+  available: item.available,
+});
+
+router.get("/menu", async (_req, res): Promise<void> => {
+  try {
+    await ensureMenuSeeded();
+    const storedMenu = await db.select().from(menuItems).orderBy(menuItems.sortOrder);
+    res.set("Cache-Control", "no-store");
+    res.json(storedMenu.map(itemResponse));
+  } catch (error) {
+    logger.error({ err: error }, "Failed to load dining menu");
+    res.status(500).json({ error: "The dining menu is temporarily unavailable." });
+  }
 });
 
 router.get("/restaurants", (_req, res) => {
   res.json(restaurants);
 });
+
+router.get("/staff/menu", requireSignedIn, async (_req, res): Promise<void> => {
+  try {
+    await ensureMenuSeeded();
+    const storedMenu = await db
+      .select()
+      .from(menuItems)
+      .orderBy(menuItems.restaurantId, menuItems.sortOrder);
+    res.set("Cache-Control", "no-store");
+    res.json(storedMenu.map(itemResponse));
+  } catch (error) {
+    logger.error({ err: error }, "Failed to load staff dining menu");
+    res.status(500).json({ error: "The dining menu is temporarily unavailable." });
+  }
+});
+
+router.patch("/staff/menu/:itemId", requireSignedIn, async (req, res): Promise<void> => {
+  const itemId = Array.isArray(req.params.itemId) ? req.params.itemId[0] : req.params.itemId;
+  const parsed = UpdateMenuItemBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Check the menu item details and try again." });
+    return;
+  }
+  const input = parsed.data;
+  if (!input.name.trim() || !input.category.trim() || (input.available && input.price === null)) {
+    res.status(400).json({ error: "Available items need a name, category, and price." });
+    return;
+  }
+
+  try {
+    await ensureMenuSeeded();
+    const [updated] = await db
+      .update(menuItems)
+      .set({
+        name: input.name.trim(),
+        description: input.description.trim(),
+        category: input.category.trim(),
+        price: input.price === null ? null : Math.round(input.price * 100) / 100,
+        vegetarian: input.vegetarian,
+        available: input.available,
+      })
+      .where(eq(menuItems.id, itemId))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "Menu item not found." });
+      return;
+    }
+    res.json(itemResponse(updated));
+  } catch (error) {
+    logger.error({ err: error, itemId }, "Failed to update dining menu item");
+    res.status(500).json({ error: "The menu item could not be updated." });
+  }
+});
+
+router.post(
+  "/staff/restaurants/:restaurantId/menu",
+  requireSignedIn,
+  async (req, res): Promise<void> => {
+    const restaurantId = Array.isArray(req.params.restaurantId)
+      ? req.params.restaurantId[0]
+      : req.params.restaurantId;
+    const parsed = CreateMenuItemBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Check the new menu item details and try again." });
+      return;
+    }
+    const restaurant = restaurants.find((entry) => entry.id === restaurantId);
+    if (!restaurant) {
+      res.status(404).json({ error: "Restaurant not found." });
+      return;
+    }
+    const input = parsed.data;
+    if (!input.name.trim() || !input.category.trim()) {
+      res.status(400).json({ error: "Add a name and category for the menu item." });
+      return;
+    }
+
+    try {
+      await ensureMenuSeeded();
+      const restaurantItems = await db
+        .select({ sortOrder: menuItems.sortOrder })
+        .from(menuItems)
+        .where(eq(menuItems.restaurantId, restaurantId));
+      const sortOrder =
+        restaurantItems.reduce((highest, item) => Math.max(highest, item.sortOrder), -1) + 1;
+      const [created] = await db
+        .insert(menuItems)
+        .values({
+          id: `${restaurantId}-${randomUUID()}`,
+          restaurantId,
+          restaurant: restaurant.name,
+          category: input.category.trim(),
+          name: input.name.trim(),
+          description: input.description.trim(),
+          price: input.price === null ? null : Math.round(input.price * 100) / 100,
+          vegetarian: input.vegetarian,
+          imageKey: "fresh",
+          available: input.price !== null,
+          sortOrder,
+        })
+        .returning();
+      if (!created) {
+        res.status(500).json({ error: "The new menu item could not be saved." });
+        return;
+      }
+      res.status(201).json(itemResponse(created));
+    } catch (error) {
+      logger.error({ err: error, restaurantId }, "Failed to create dining menu item");
+      res.status(500).json({ error: "The new menu item could not be saved." });
+    }
+  },
+);
 
 router.get("/pickup-slots", async (req, res) => {
   const date = typeof req.query.date === "string" ? req.query.date : "";
@@ -180,8 +333,20 @@ router.post("/orders", async (req, res) => {
   for (const line of input.items) {
     requested.set(line.itemId, (requested.get(line.itemId) ?? 0) + line.quantity);
   }
+  let currentMenu: typeof menuItems.$inferSelect[];
+  try {
+    await ensureMenuSeeded();
+    currentMenu = await db
+      .select()
+      .from(menuItems)
+      .where(inArray(menuItems.id, [...requested.keys()]));
+  } catch (error) {
+    logger.error({ err: error }, "Failed to validate dining order menu items");
+    return res.status(500).json({ error: "The menu is temporarily unavailable. Please try again." });
+  }
+  const currentMenuById = new Map(currentMenu.map((item) => [item.id, item]));
   const selectedItems = [...requested.entries()].map(([itemId, quantity]) => {
-    const item = menu.find((menuItem) => menuItem.id === itemId);
+    const item = currentMenuById.get(itemId);
     return item?.available && item.price !== null
       ? { itemId, quantity, name: item.name, price: item.price }
       : null;

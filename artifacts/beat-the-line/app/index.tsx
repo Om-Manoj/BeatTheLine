@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useGetMenu, useGetRestaurants } from '@workspace/api-client-react';
+import { getGetMenuQueryKey, useGetMenu, useGetRestaurants } from '@workspace/api-client-react';
 import type { MenuItem } from '@workspace/api-client-react';
 import { useCart } from '@/context/cart-context';
 import { useColors } from '@/hooks/useColors';
@@ -182,7 +182,9 @@ export default function HomeScreen() {
 function MenuContent() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { data: menu, isLoading, isError, refetch } = useGetMenu();
+  const { data: menu, isLoading, isError, refetch } = useGetMenu({
+    query: { queryKey: getGetMenuQueryKey(), refetchInterval: 15000 },
+  });
   const { data: restaurants = [], isLoading: restaurantsLoading, isError: restaurantsError } = useGetRestaurants();
   const { quantities, itemCount, addItem, removeItem } = useCart();
   const [restaurantId, setRestaurantId] = useState('currylicious');

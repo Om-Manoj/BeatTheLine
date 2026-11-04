@@ -14,6 +14,7 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
+  getGetMenuQueryKey,
   getGetPickupSlotsQueryKey,
   useCreateOrder,
   useGetMenu,
@@ -91,7 +92,9 @@ export default function CheckoutScreen() {
   const queryClient = useQueryClient();
   const pickupDate = useMemo(formatDate, []);
   const { quantities, clearCart, itemCount } = useCart();
-  const { data: menu = [] } = useGetMenu();
+  const { data: menu = [] } = useGetMenu({
+    query: { queryKey: getGetMenuQueryKey(), refetchInterval: 15000 },
+  });
   const { data: slots = [], isLoading: slotsLoading, isError: slotsError, refetch } =
     useGetPickupSlots({ date: pickupDate });
   const [selectedTime, setSelectedTime] = useState<string | null>(null);

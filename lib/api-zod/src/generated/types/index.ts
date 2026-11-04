@@ -10,6 +10,8 @@ export * from './error';
 export * from './getPickupSlotsParams';
 export * from './healthStatus';
 export * from './menuItem';
+export * from './menuItemInput';
+export * from './menuItemUpdate';
 export * from './order';
 export * from './orderInput';
 export * from './orderInputBalanceAccount';

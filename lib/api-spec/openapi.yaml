@@ -54,6 +54,110 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Restaurant"
+  /staff/menu:
+    get:
+      operationId: getStaffMenu
+      tags: [dining]
+      summary: Get all restaurant menu items for staff
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Prototype-Staff-Access
+          in: header
+          required: false
+          description: Development-only demo access; ignored outside development mode.
+          schema:
+            type: string
+            enum: [demo]
+      responses:
+        "200":
+          description: Menu items including unavailable items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuItem"
+        "401":
+          description: Sign-in required
+  /staff/menu/{itemId}:
+    patch:
+      operationId: updateMenuItem
+      tags: [dining]
+      summary: Update a restaurant menu item
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Prototype-Staff-Access
+          in: header
+          required: false
+          description: Development-only demo access; ignored outside development mode.
+          schema:
+            type: string
+            enum: [demo]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MenuItemUpdate"
+      responses:
+        "200":
+          description: Updated menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+        "400":
+          description: Invalid menu item
+        "401":
+          description: Sign-in required
+        "404":
+          description: Menu item not found
+  /staff/restaurants/{restaurantId}/menu:
+    post:
+      operationId: createMenuItem
+      tags: [dining]
+      summary: Add an item to a restaurant menu
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: restaurantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Prototype-Staff-Access
+          in: header
+          required: false
+          description: Development-only demo access; ignored outside development mode.
+          schema:
+            type: string
+            enum: [demo]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MenuItemInput"
+      responses:
+        "201":
+          description: Created menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+        "400":
+          description: Invalid menu item
+        "401":
+          description: Sign-in required
+        "404":
+          description: Restaurant not found
   /pickup-slots:
     get:
       operationId: getPickupSlots
@@ -219,6 +323,25 @@ components:
         restaurantId: { type: string }
         restaurant: { type: string }
         category: { type: string }
+        available: { type: boolean }
+    MenuItemInput:
+      type: object
+      required: [name, description, category, price, vegetarian]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        description: { type: string, maxLength: 500 }
+        category: { type: string, minLength: 1, maxLength: 80 }
+        price: { type: ["number", "null"], minimum: 0 }
+        vegetarian: { type: boolean }
+    MenuItemUpdate:
+      type: object
+      required: [name, description, category, price, vegetarian, available]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        description: { type: string, maxLength: 500 }
+        category: { type: string, minLength: 1, maxLength: 80 }
+        price: { type: ["number", "null"], minimum: 0 }
+        vegetarian: { type: boolean }
         available: { type: boolean }
     Restaurant:
       type: object

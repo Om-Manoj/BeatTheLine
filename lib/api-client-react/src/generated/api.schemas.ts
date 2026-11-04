@@ -23,6 +23,49 @@ export interface MenuItem {
   available: boolean;
 }
 
+export interface MenuItemInput {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /** @maxLength 500 */
+  description: string;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  category: string;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  price: number | null;
+  vegetarian: boolean;
+}
+
+export interface MenuItemUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /** @maxLength 500 */
+  description: string;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  category: string;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  price: number | null;
+  vegetarian: boolean;
+  available: boolean;
+}
+
 export interface Restaurant {
   id: string;
   name: string;

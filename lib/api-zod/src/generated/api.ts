@@ -46,6 +46,115 @@ export const GetRestaurantsResponse = zod.array(GetRestaurantsResponseItem)
 
 
 /**
+ * @summary Get all restaurant menu items for staff
+ */
+export const GetStaffMenuHeader = zod.object({
+  "X-Prototype-Staff-Access": zod.enum(['demo']).optional().describe('Development-only demo access; ignored outside development mode.')
+})
+
+export const GetStaffMenuResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "price": zod.number().nullable(),
+  "vegetarian": zod.boolean(),
+  "imageKey": zod.string(),
+  "restaurantId": zod.string(),
+  "restaurant": zod.string(),
+  "category": zod.string(),
+  "available": zod.boolean()
+})
+export const GetStaffMenuResponse = zod.array(GetStaffMenuResponseItem)
+
+
+/**
+ * @summary Update a restaurant menu item
+ */
+export const UpdateMenuItemParams = zod.object({
+  "itemId": zod.coerce.string()
+})
+
+export const UpdateMenuItemHeader = zod.object({
+  "X-Prototype-Staff-Access": zod.enum(['demo']).optional().describe('Development-only demo access; ignored outside development mode.')
+})
+
+export const updateMenuItemBodyNameMax = 100;
+
+export const updateMenuItemBodyDescriptionMax = 500;
+
+export const updateMenuItemBodyCategoryMax = 80;
+
+export const updateMenuItemBodyPriceMin = 0;
+
+
+
+export const UpdateMenuItemBody = zod.object({
+  "name": zod.string().min(1).max(updateMenuItemBodyNameMax),
+  "description": zod.string().max(updateMenuItemBodyDescriptionMax),
+  "category": zod.string().min(1).max(updateMenuItemBodyCategoryMax),
+  "price": zod.number().min(updateMenuItemBodyPriceMin).nullable(),
+  "vegetarian": zod.boolean(),
+  "available": zod.boolean()
+})
+
+export const UpdateMenuItemResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "price": zod.number().nullable(),
+  "vegetarian": zod.boolean(),
+  "imageKey": zod.string(),
+  "restaurantId": zod.string(),
+  "restaurant": zod.string(),
+  "category": zod.string(),
+  "available": zod.boolean()
+})
+
+
+/**
+ * @summary Add an item to a restaurant menu
+ */
+export const CreateMenuItemParams = zod.object({
+  "restaurantId": zod.coerce.string()
+})
+
+export const CreateMenuItemHeader = zod.object({
+  "X-Prototype-Staff-Access": zod.enum(['demo']).optional().describe('Development-only demo access; ignored outside development mode.')
+})
+
+export const createMenuItemBodyNameMax = 100;
+
+export const createMenuItemBodyDescriptionMax = 500;
+
+export const createMenuItemBodyCategoryMax = 80;
+
+export const createMenuItemBodyPriceMin = 0;
+
+
+
+export const CreateMenuItemBody = zod.object({
+  "name": zod.string().min(1).max(createMenuItemBodyNameMax),
+  "description": zod.string().max(createMenuItemBodyDescriptionMax),
+  "category": zod.string().min(1).max(createMenuItemBodyCategoryMax),
+  "price": zod.number().min(createMenuItemBodyPriceMin).nullable(),
+  "vegetarian": zod.boolean()
+})
+
+export const CreateMenuItemResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "price": zod.number().nullable(),
+  "vegetarian": zod.boolean(),
+  "imageKey": zod.string(),
+  "restaurantId": zod.string(),
+  "restaurant": zod.string(),
+  "category": zod.string(),
+  "available": zod.boolean()
+})
+
+
+/**
  * @summary Get pickup slot availability for a date
  */
 export const GetPickupSlotsQueryParams = zod.object({

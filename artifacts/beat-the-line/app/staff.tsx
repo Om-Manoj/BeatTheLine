@@ -181,10 +181,26 @@ export default function StaffQueueScreen() {
           <Text style={[styles.eyebrow, { color: colors.primary }]}>DINING HALL</Text>
           <Text style={[styles.title, { color: colors.foreground }]}>Order queue</Text>
         </View>
-        <Pressable accessibilityRole="button" onPress={signOutOfStaff} style={styles.signOut}>
-          <Feather name="log-out" size={16} color={colors.primary} />
-          <Text style={[styles.signOutText, { color: colors.primary }]}>Sign out</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Manage restaurant menus"
+            testID="manage-menus"
+            onPress={() =>
+              router.push(
+                isDemoAccess ? { pathname: '/staff/menu', params: { demo: 'true' } } : '/staff/menu',
+              )
+            }
+            style={styles.signOut}
+          >
+            <Feather name="edit-3" size={15} color={colors.primary} />
+            <Text style={[styles.signOutText, { color: colors.primary }]}>Menus</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" onPress={signOutOfStaff} style={styles.signOut}>
+            <Feather name="log-out" size={15} color={colors.primary} />
+            <Text style={[styles.signOutText, { color: colors.primary }]}>Sign out</Text>
+          </Pressable>
+        </View>
       </View>
       <View style={[styles.liveBanner, { backgroundColor: colors.secondary }]}>
         <View style={styles.liveDot} />
@@ -271,6 +287,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 15 },
   eyebrow: { fontSize: 10, letterSpacing: 1.3, fontWeight: '700' },
   title: { fontSize: 27, fontWeight: '700', letterSpacing: -0.7, marginTop: 3 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   signOut: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 42, paddingHorizontal: 8 },
   signOutText: { fontSize: 12, fontWeight: '700' },
   liveBanner: { minHeight: 38, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, marginBottom: 13 },

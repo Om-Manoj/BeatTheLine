@@ -8,6 +8,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+export * from "./menu-items";
+
 export const orders = pgTable("dining_orders", {
   id: serial("id").primaryKey(),
   confirmationToken: uuid("confirmation_token").defaultRandom().notNull(),
