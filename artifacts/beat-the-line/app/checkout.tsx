@@ -101,6 +101,7 @@ export default function CheckoutScreen() {
   const [mealSwipeCount, setMealSwipeCount] = useState(0);
   const [balanceAccount, setBalanceAccount] = useState<BalanceAccount>('flex_dirhams');
   const [showNetIdPreview, setShowNetIdPreview] = useState(false);
+  const [deliveryPreviewSelected, setDeliveryPreviewSelected] = useState(false);
   const [studentName, setStudentName] = useState('');
   const [formError, setFormError] = useState('');
   const orderMutation = useCreateOrder();
@@ -234,6 +235,49 @@ export default function CheckoutScreen() {
               placeholderTextColor={colors.mutedForeground}
               style={[styles.input, { backgroundColor: colors.card, borderColor: colors.input, color: colors.foreground }]}
             />
+            <View style={[styles.deliveryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.deliveryHeader}>
+                <View style={[styles.deliveryIcon, { backgroundColor: colors.secondary }]}>
+                  <Feather name="truck" size={18} color={colors.primary} />
+                </View>
+                <View style={styles.deliveryCopy}>
+                  <Text style={[styles.deliveryTitle, { color: colors.foreground }]}>Student delivery</Text>
+                  <Text style={[styles.deliveryDetail, { color: colors.mutedForeground }]}>
+                    Another student could bring your order for a small fee.
+                  </Text>
+                </View>
+                <View style={[styles.deliveryBadge, { backgroundColor: colors.accent }]}>
+                  <Text style={[styles.deliveryBadgeText, { color: colors.accentForeground }]}>FUTURE IDEA</Text>
+                </View>
+              </View>
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: deliveryPreviewSelected }}
+                accessibilityLabel="Preview the student delivery option"
+                testID="student-delivery-preview"
+                onPress={() => setDeliveryPreviewSelected((selected) => !selected)}
+                style={[
+                  styles.deliveryPreviewButton,
+                  {
+                    backgroundColor: deliveryPreviewSelected ? colors.secondary : colors.background,
+                    borderColor: deliveryPreviewSelected ? colors.primary : colors.border,
+                  },
+                ]}
+              >
+                <Feather
+                  name={deliveryPreviewSelected ? 'check-circle' : 'circle'}
+                  size={18}
+                  color={colors.primary}
+                />
+                <Text style={[styles.deliveryPreviewText, { color: colors.foreground }]}>
+                  {deliveryPreviewSelected ? 'Concept preview selected' : 'Preview this option'}
+                </Text>
+                <Text style={[styles.deliveryFeeLabel, { color: colors.primary }]}>Small fee</Text>
+              </Pressable>
+              <Text style={[styles.deliveryDisclaimer, { color: colors.mutedForeground }]}>
+                Future extension only. Orders still use dining hall pickup; this preview adds no fee and sends no delivery request.
+              </Text>
+            </View>
             <View style={[styles.summary, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.summaryTop}>
                 <Text style={[styles.summaryTitle, { color: colors.foreground }]}>Order summary</Text>
@@ -463,6 +507,18 @@ const styles = StyleSheet.create({
   loading: { height: 80, justifyContent: 'center' },
   errorCard: { borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 16 },
   input: { height: 51, borderRadius: 13, borderWidth: 1, paddingHorizontal: 14, fontSize: 14, marginBottom: 18 },
+  deliveryCard: { borderWidth: 1, borderRadius: 16, padding: 13, marginBottom: 18 },
+  deliveryHeader: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  deliveryIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  deliveryCopy: { flex: 1 },
+  deliveryTitle: { fontSize: 13, fontWeight: '700' },
+  deliveryDetail: { fontSize: 10, lineHeight: 14, marginTop: 3 },
+  deliveryBadge: { borderRadius: 9, paddingHorizontal: 7, paddingVertical: 5 },
+  deliveryBadgeText: { fontSize: 8, fontWeight: '700', letterSpacing: 0.3 },
+  deliveryPreviewButton: { minHeight: 42, borderRadius: 11, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10, marginTop: 12 },
+  deliveryPreviewText: { flex: 1, fontSize: 11, fontWeight: '600' },
+  deliveryFeeLabel: { fontSize: 10, fontWeight: '700' },
+  deliveryDisclaimer: { fontSize: 10, lineHeight: 14, marginTop: 9 },
   summary: { borderWidth: 1, borderRadius: 16, padding: 15 },
   summaryTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 11 },
   summaryTitle: { fontSize: 14, fontWeight: '700' },
