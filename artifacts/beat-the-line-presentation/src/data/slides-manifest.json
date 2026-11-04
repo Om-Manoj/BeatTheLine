@@ -1,0 +1,58 @@
+[
+  {
+    "id": "a3d79a66-f2de-4cc0-8f0e-2df104a0a111",
+    "position": 1,
+    "filepath": "src/pages/slides/BeatTheLine.tsx",
+    "title": "BeatTheLine",
+    "description": "Campus dining, without the line.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a3d79a66-f2de-4cc0-8f0e-2df104a0a112",
+    "position": 2,
+    "filepath": "src/pages/slides/TheProblem.tsx",
+    "title": "The problem",
+    "description": "The problem",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a3d79a66-f2de-4cc0-8f0e-2df104a0a113",
+    "position": 3,
+    "filepath": "src/pages/slides/ProblemStatement.tsx",
+    "title": "Problem statement",
+    "description": "Problem statement",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a3d79a66-f2de-4cc0-8f0e-2df104a0a114",
+    "position": 4,
+    "filepath": "src/pages/slides/OurSolution.tsx",
+    "title": "Our solution",
+    "description": "Our solution",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a3d79a66-f2de-4cc0-8f0e-2df104a0a115",
+    "position": 5,
+    "filepath": "src/pages/slides/OurMvp.tsx",
+    "title": "Our MVP",
+    "description": "Our MVP",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a3d79a66-f2de-4cc0-8f0e-2df104a0a116",
+    "position": 6,
+    "filepath": "src/pages/slides/Features.tsx",
+    "title": "Features",
+    "description": "Features",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a3d79a66-f2de-4cc0-8f0e-2df104a0a117",
+    "position": 7,
+    "filepath": "src/pages/slides/HowItWorks.tsx",
+    "title": "How it works",
+    "description": "How it works",
+    "speakerNotes": ""
+  }
+]

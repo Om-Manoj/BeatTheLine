@@ -1,0 +1,28 @@
+kind = "slides"
+previewPath = "/beat-the-line-presentation/"
+title = "BeatTheLine Presentation"
+description = "A seven-slide presentation introducing the BeatTheLine university dining pre-order prototype, the problem it addresses, its MVP, features, and student/staff workflows."
+version = "1.0.0"
+id = "artifacts/beat-the-line-presentation"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/beat-the-line-presentation/" ]
+localPort = 19083
+
+[services.development]
+run = "pnpm --filter @workspace/beat-the-line-presentation run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/beat-the-line-presentation", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/beat-the-line-presentation/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19083"
+BASE_PATH = "/beat-the-line-presentation/"
