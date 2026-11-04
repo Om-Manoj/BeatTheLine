@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   emptyCard: { alignItems: 'center', gap: 8, padding: 22, borderWidth: 1, borderRadius: 16, marginTop: 10 },
   emptyTitle: { fontSize: 15, fontWeight: '700' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 9 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(20, 30, 22, 0.48)', justifyContent: 'center', paddingHorizontal: 14 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(50, 27, 64, 0.48)', justifyContent: 'center', paddingHorizontal: 14 },
   modalScroll: { flexGrow: 0, maxHeight: '100%' },
   modalScrollContent: { flexGrow: 1, justifyContent: 'center', paddingVertical: 12 },
   formCard: { width: '100%', maxWidth: 520, alignSelf: 'center', borderRadius: 20, padding: 18 },

@@ -83,7 +83,7 @@ export default function OrderConfirmationScreen() {
         <Text style={[styles.errorCopy, { color: colors.mutedForeground }]}>We couldn’t load this confirmation.</Text>
         {isValidToken && (
           <Pressable accessibilityRole="button" onPress={() => refetch()} style={styles.retry}>
-            <Text style={styles.retryText}>Try again</Text>
+            <Text style={[styles.retryText, { color: colors.primary }]}>Try again</Text>
           </Pressable>
         )}
         <Pressable
@@ -91,10 +91,15 @@ export default function OrderConfirmationScreen() {
           accessibilityLabel="Back to app start"
           testID="error-back-to-start"
           onPress={() => router.replace('/')}
-          style={({ pressed }) => [styles.doneButton, styles.errorBackButton, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.doneButton,
+            styles.errorBackButton,
+            { backgroundColor: colors.primary },
+            pressed && styles.pressed,
+          ]}
         >
-          <Feather name="home" size={17} color="#FFFFFF" />
-          <Text style={styles.doneText}>Back to start</Text>
+          <Feather name="home" size={17} color={colors.primaryForeground} />
+          <Text style={[styles.doneText, { color: colors.primaryForeground }]}>Back to start</Text>
         </Pressable>
       </View>
     );
@@ -106,27 +111,27 @@ export default function OrderConfirmationScreen() {
         <View style={styles.topBar}>
           <Text style={[styles.brand, { color: colors.foreground }]}>BeatTheLine</Text>
           <View style={[styles.confirmedPill, { backgroundColor: colors.secondary }]}>
-            <View style={styles.confirmedDot} />
+            <View style={[styles.confirmedDot, { backgroundColor: colors.success }]} />
             <Text style={[styles.confirmedText, { color: colors.primary }]}>CONFIRMED</Text>
           </View>
         </View>
-        <View style={styles.checkCircle}>
-          <Feather name="check" size={38} color="#FFFFFF" />
+        <View style={[styles.checkCircle, { backgroundColor: colors.primary }]}>
+          <Feather name="check" size={38} color={colors.primaryForeground} />
         </View>
         <Text style={[styles.title, { color: colors.foreground }]}>You’re all set, {order.studentName.split(' ')[0]}.</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>Your lunch is being made fresh. See you soon!</Text>
 
-        <View style={[styles.pickupCard, { backgroundColor: '#E8EFD9' }]}>
+        <View style={[styles.pickupCard, { backgroundColor: colors.secondary }]}>
           <View style={styles.pickupLabelRow}>
-            <Feather name="clock" size={15} color="#287A54" />
-            <Text style={styles.pickupLabel}>PICKUP TIME</Text>
+            <Feather name="clock" size={15} color={colors.primary} />
+            <Text style={[styles.pickupLabel, { color: colors.primary }]}>PICKUP TIME</Text>
           </View>
-          <Text style={styles.pickupTime}>{prettyTime(order.pickupTime)}</Text>
-          <Text style={styles.pickupDate}>Today · Dining hall pickup counter</Text>
-          <View style={styles.codeDivider} />
-          <Text style={styles.codeLabel}>YOUR PICKUP CODE</Text>
-          <Text accessibilityLabel={`Pickup code ${order.pickupCode}`} style={styles.pickupCode}>{order.pickupCode}</Text>
-          <Text style={styles.codeHint}>Show this code at the counter</Text>
+          <Text style={[styles.pickupTime, { color: colors.foreground }]}>{prettyTime(order.pickupTime)}</Text>
+          <Text style={[styles.pickupDate, { color: colors.mutedForeground }]}>Today · Dining hall pickup counter</Text>
+          <View style={[styles.codeDivider, { backgroundColor: colors.border }]} />
+          <Text style={[styles.codeLabel, { color: colors.mutedForeground }]}>YOUR PICKUP CODE</Text>
+          <Text accessibilityLabel={`Pickup code ${order.pickupCode}`} style={[styles.pickupCode, { color: colors.foreground }]}>{order.pickupCode}</Text>
+          <Text style={[styles.codeHint, { color: colors.mutedForeground }]}>Show this code at the counter</Text>
         </View>
 
         <View style={[styles.summary, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -167,10 +172,10 @@ export default function OrderConfirmationScreen() {
           accessibilityRole="button"
           testID="back-to-menu"
           onPress={() => router.replace('/')}
-          style={({ pressed }) => [styles.doneButton, pressed && styles.pressed]}
+          style={({ pressed }) => [styles.doneButton, { backgroundColor: colors.primary }, pressed && styles.pressed]}
         >
-          <Feather name="plus" size={18} color="#FFFFFF" />
-          <Text style={styles.doneText}>Back to menu</Text>
+          <Feather name="plus" size={18} color={colors.primaryForeground} />
+          <Text style={[styles.doneText, { color: colors.primaryForeground }]}>Back to menu</Text>
         </Pressable>
       </ScrollView>
     </View>
@@ -183,20 +188,20 @@ const styles = StyleSheet.create({
   topBar: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 26 },
   brand: { fontSize: 17, fontWeight: '700', letterSpacing: -0.3 },
   confirmedPill: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 18, paddingHorizontal: 9, paddingVertical: 6 },
-  confirmedDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#4F9A62' },
+  confirmedDot: { width: 6, height: 6, borderRadius: 3 },
   confirmedText: { fontSize: 9, fontWeight: '700', letterSpacing: 0.7 },
-  checkCircle: { width: 74, height: 74, borderRadius: 37, backgroundColor: '#287A54', alignItems: 'center', justifyContent: 'center', marginBottom: 17 },
+  checkCircle: { width: 74, height: 74, borderRadius: 37, alignItems: 'center', justifyContent: 'center', marginBottom: 17 },
   title: { fontSize: 23, lineHeight: 30, fontWeight: '700', letterSpacing: -0.5, textAlign: 'center' },
   subtitle: { fontSize: 12, lineHeight: 18, textAlign: 'center', marginTop: 7, marginBottom: 22 },
   pickupCard: { width: '100%', borderRadius: 21, padding: 19, alignItems: 'center', marginBottom: 16 },
   pickupLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  pickupLabel: { fontSize: 10, color: '#287A54', fontWeight: '700', letterSpacing: 1 },
-  pickupTime: { fontSize: 30, lineHeight: 36, color: '#214D34', fontWeight: '700', marginTop: 7 },
-  pickupDate: { fontSize: 11, color: '#59715D', marginTop: 3, textAlign: 'center' },
-  codeDivider: { height: 1, width: '100%', backgroundColor: 'rgba(40,122,84,0.18)', marginTop: 16, marginBottom: 13 },
-  codeLabel: { color: '#58725E', fontSize: 9, fontWeight: '700', letterSpacing: 1 },
-  pickupCode: { fontSize: 34, lineHeight: 42, color: '#214D34', fontWeight: '700', letterSpacing: 3, marginTop: 2 },
-  codeHint: { fontSize: 10, color: '#59715D', marginTop: 2 },
+  pickupLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  pickupTime: { fontSize: 30, lineHeight: 36, fontWeight: '700', marginTop: 7 },
+  pickupDate: { fontSize: 11, marginTop: 3, textAlign: 'center' },
+  codeDivider: { height: 1, width: '100%', marginTop: 16, marginBottom: 13 },
+  codeLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 1 },
+  pickupCode: { fontSize: 34, lineHeight: 42, fontWeight: '700', letterSpacing: 3, marginTop: 2 },
+  codeHint: { fontSize: 10, marginTop: 2 },
   summary: { width: '100%', borderRadius: 17, borderWidth: 1, padding: 15 },
   summaryTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 9 },
   summaryTitle: { fontSize: 14, fontWeight: '700' },
@@ -214,8 +219,8 @@ const styles = StyleSheet.create({
   paymentNote: { fontSize: 10, lineHeight: 15, marginTop: 4 },
   tip: { width: '100%', flexDirection: 'row', gap: 8, alignItems: 'flex-start', marginTop: 14, marginBottom: 16, paddingHorizontal: 2 },
   tipText: { flex: 1, fontSize: 11, lineHeight: 16 },
-  doneButton: { width: '100%', height: 52, backgroundColor: '#287A54', borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  doneText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  doneButton: { width: '100%', height: 52, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  doneText: { fontSize: 13, fontWeight: '700' },
   pressed: { opacity: 0.85, transform: [{ scale: 0.99 }] },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
   loadingText: { marginTop: 9, fontSize: 12 },
@@ -223,6 +228,6 @@ const styles = StyleSheet.create({
   errorTitle: { fontSize: 19, fontWeight: '700', marginTop: 14 },
   errorCopy: { fontSize: 12, marginTop: 5 },
   retry: { padding: 12, marginTop: 8 },
-  retryText: { color: '#287A54', fontWeight: '700', fontSize: 13 },
+  retryText: { fontWeight: '700', fontSize: 13 },
   errorBackButton: { marginTop: 12, maxWidth: 300 },
 });

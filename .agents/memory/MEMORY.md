@@ -1,1 +1,2 @@
 - [BeatTheLine dining rules](dining-order-rules.md) — mock payment choices, open prototype staff queue with development-only demo access, and five orders per slot.
+- [BeatTheLine visual identity](beat-the-line-visual-identity.md) — NYU-inspired violet with lavender and warm-gold accents; preserve the distinction from official university branding.

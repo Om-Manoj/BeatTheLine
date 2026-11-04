@@ -87,13 +87,13 @@ function OrderCard({ order, isDemoAccess }: { order: StaffOrder; isDemoAccess: b
         <View
           style={[
             styles.statusPill,
-            { backgroundColor: order.status === 'ready' ? '#E8EFD9' : colors.accent },
+            { backgroundColor: order.status === 'ready' ? colors.successSurface : colors.accent },
           ]}
         >
           <Text
             style={[
               styles.statusText,
-              { color: order.status === 'ready' ? '#287A54' : colors.accentForeground },
+              { color: order.status === 'ready' ? colors.successForeground : colors.accentForeground },
             ]}
           >
             {statusLabel[order.status]}
@@ -121,14 +121,18 @@ function OrderCard({ order, isDemoAccess }: { order: StaffOrder; isDemoAccess: b
           onPress={() =>
             statusMutation.mutate({ orderId: order.id, data: { status: action.status } })
           }
-          style={({ pressed }) => [styles.actionButton, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.actionButton,
+            { backgroundColor: colors.primary },
+            pressed && styles.pressed,
+          ]}
         >
           {statusMutation.isPending ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <ActivityIndicator size="small" color={colors.primaryForeground} />
           ) : (
             <>
-              <Text style={styles.actionText}>{action.label}</Text>
-              <Feather name="arrow-right" size={16} color="#FFFFFF" />
+              <Text style={[styles.actionText, { color: colors.primaryForeground }]}>{action.label}</Text>
+              <Feather name="arrow-right" size={16} color={colors.primaryForeground} />
             </>
           )}
         </Pressable>
@@ -203,7 +207,7 @@ export default function StaffQueueScreen() {
         </View>
       </View>
       <View style={[styles.liveBanner, { backgroundColor: colors.secondary }]}>
-        <View style={styles.liveDot} />
+        <View style={[styles.liveDot, { backgroundColor: colors.success }]} />
         <Text style={[styles.liveText, { color: colors.foreground }]}>
           {isDemoAccess
             ? 'Development demo · credentials not checked · preview access is open'
@@ -227,7 +231,7 @@ export default function StaffQueueScreen() {
               : 'The order queue could not load. Try again in a moment.'}
           </Text>
           <Pressable accessibilityRole="button" onPress={() => refetch()} style={styles.retryButton}>
-            <Text style={styles.retryText}>Try again</Text>
+              <Text style={[styles.retryText, { color: colors.primary }]}>Try again</Text>
           </Pressable>
         </View>
       ) : (
@@ -291,7 +295,7 @@ const styles = StyleSheet.create({
   signOut: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 42, paddingHorizontal: 8 },
   signOutText: { fontSize: 12, fontWeight: '700' },
   liveBanner: { minHeight: 38, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, marginBottom: 13 },
-  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#4F9A62' },
+  liveDot: { width: 7, height: 7, borderRadius: 4 },
   liveText: { fontSize: 11, fontWeight: '600' },
   list: { paddingBottom: 24 },
   count: { fontSize: 12, fontWeight: '600', marginBottom: 8 },
@@ -313,15 +317,15 @@ const styles = StyleSheet.create({
   pickupCode: { fontSize: 15, fontWeight: '800', letterSpacing: 1 },
   items: { gap: 6, paddingVertical: 12 },
   itemText: { fontSize: 12, lineHeight: 17 },
-  actionButton: { minHeight: 43, borderRadius: 12, backgroundColor: '#287A54', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  actionText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
+  actionButton: { minHeight: 43, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  actionText: { fontSize: 12, fontWeight: '700' },
   pressed: { opacity: 0.82 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 9 },
   mutedText: { fontSize: 12, lineHeight: 18, textAlign: 'center' },
   errorCard: { alignItems: 'center', gap: 10, padding: 22, borderWidth: 1, borderRadius: 17, marginTop: 28 },
   errorTitle: { fontSize: 16, fontWeight: '700' },
   retryButton: { minHeight: 40, justifyContent: 'center', paddingHorizontal: 18 },
-  retryText: { color: '#287A54', fontSize: 12, fontWeight: '700' },
+  retryText: { fontSize: 12, fontWeight: '700' },
   emptyCard: { alignItems: 'center', gap: 8, padding: 25, borderWidth: 1, borderRadius: 17, marginTop: 12 },
   emptyTitle: { fontSize: 15, fontWeight: '700' },
 });

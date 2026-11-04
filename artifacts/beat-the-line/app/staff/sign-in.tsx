@@ -157,19 +157,20 @@ export default function StaffSignInScreen() {
               />
             </>
           )}
-          {formError ? <Text accessibilityRole="alert" style={styles.error}>{formError}</Text> : null}
+          {formError ? <Text accessibilityRole="alert" style={[styles.error, { color: colors.destructive }]}>{formError}</Text> : null}
           <Pressable
             accessibilityRole="button"
             disabled={busy || (isVerifying ? !verificationCode.trim() : !emailAddress.trim() || !password)}
             onPress={isVerifying ? handleVerify : handleSignIn}
             style={({ pressed }) => [
               styles.primaryButton,
+              { backgroundColor: colors.primary },
               (busy || (isVerifying ? !verificationCode.trim() : !emailAddress.trim() || !password)) &&
                 styles.disabled,
               pressed && styles.pressed,
             ]}
           >
-            {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryButtonText}>
+            {busy ? <ActivityIndicator color={colors.primaryForeground} /> : <Text style={[styles.primaryButtonText, { color: colors.primaryForeground }]}>
               {isVerifying ? 'Verify and continue' : __DEV__ ? 'Demo sign in' : 'Sign in'}
             </Text>}
           </Pressable>
@@ -207,9 +208,9 @@ const styles = StyleSheet.create({
   input: { minHeight: 48, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, fontSize: 14 },
   resend: { minHeight: 37, justifyContent: 'center', alignSelf: 'flex-start' },
   resendText: { fontSize: 12, fontWeight: '700' },
-  error: { color: '#B13D32', fontSize: 12, lineHeight: 17, marginTop: 12 },
-  primaryButton: { minHeight: 50, borderRadius: 13, backgroundColor: '#287A54', justifyContent: 'center', alignItems: 'center', marginTop: 17 },
-  primaryButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
+  error: { fontSize: 12, lineHeight: 17, marginTop: 12 },
+  primaryButton: { minHeight: 50, borderRadius: 13, justifyContent: 'center', alignItems: 'center', marginTop: 17 },
+  primaryButtonText: { fontSize: 14, fontWeight: '700' },
   disabled: { opacity: 0.52 },
   pressed: { opacity: 0.82 },
   signupLink: { minHeight: 43, justifyContent: 'center', alignItems: 'center', marginTop: 5 },

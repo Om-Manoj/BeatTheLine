@@ -76,10 +76,10 @@ function SlotButton({
         },
       ]}
     >
-      <Text style={[styles.slotTime, { color: selected ? '#FFFFFF' : colors.foreground }]}>
+      <Text style={[styles.slotTime, { color: selected ? colors.primaryForeground : colors.foreground }]}>
         {prettyTime(slot.time)}
       </Text>
-      <Text style={[styles.slotCapacity, { color: selected ? '#E6F4E9' : colors.mutedForeground }]}>
+      <Text style={[styles.slotCapacity, { color: selected ? colors.primaryForeground : colors.mutedForeground }]}>
         {slot.available ? `${slot.remaining} spots` : 'Full'}
       </Text>
     </Pressable>
@@ -184,7 +184,7 @@ export default function CheckoutScreen() {
         ListHeaderComponent={
           <>
             <View style={styles.sectionTitleRow}>
-              <View style={styles.stepNumber}><Text style={styles.stepNumberText}>1</Text></View>
+              <View style={[styles.stepNumber, { backgroundColor: colors.secondary }]}><Text style={[styles.stepNumberText, { color: colors.primary }]}>1</Text></View>
               <View>
                 <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Choose a pickup time</Text>
                 <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>Today · 11:30 AM – 1:30 PM</Text>
@@ -212,7 +212,7 @@ export default function CheckoutScreen() {
               </View>
             )}
             <View style={styles.sectionTitleRow}>
-              <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
+              <View style={[styles.stepNumber, { backgroundColor: colors.secondary }]}><Text style={[styles.stepNumberText, { color: colors.primary }]}>2</Text></View>
               <View>
                 <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Who’s picking it up?</Text>
                 <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>We’ll call this name when it’s ready</Text>
@@ -256,7 +256,7 @@ export default function CheckoutScreen() {
               </View>
             </View>
             <View style={styles.sectionTitleRow}>
-              <View style={styles.stepNumber}><Text style={styles.stepNumberText}>3</Text></View>
+              <View style={[styles.stepNumber, { backgroundColor: colors.secondary }]}><Text style={[styles.stepNumberText, { color: colors.primary }]}>3</Text></View>
               <View>
                 <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Split your payment</Text>
                 <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>Demo only · no balance is charged</Text>
@@ -420,17 +420,18 @@ export default function CheckoutScreen() {
           onPress={placeOrder}
           style={({ pressed }) => [
             styles.placeButton,
+            { backgroundColor: colors.primary },
             (orderMutation.isPending || itemCount === 0 || slotsLoading || slotsError) && styles.disabledButton,
             pressed && styles.pressed,
           ]}
         >
           {orderMutation.isPending ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={colors.primaryForeground} />
           ) : (
             <>
-              <Text style={styles.placeText}>Place order</Text>
-              <Text style={styles.placeTotal}>{money(total)}</Text>
-              <Feather name="arrow-right" size={18} color="#FFFFFF" />
+              <Text style={[styles.placeText, { color: colors.primaryForeground }]}>Place order</Text>
+              <Text style={[styles.placeTotal, { color: colors.primaryForeground }]}>{money(total)}</Text>
+              <Feather name="arrow-right" size={18} color={colors.primaryForeground} />
             </>
           )}
         </Pressable>
@@ -451,8 +452,8 @@ const styles = StyleSheet.create({
   stepText: { fontSize: 9, fontWeight: '700', letterSpacing: 0.8 },
   content: { paddingHorizontal: 18, paddingTop: 5 },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 11, marginTop: 10, marginBottom: 13 },
-  stepNumber: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#DDEBDD', alignItems: 'center', justifyContent: 'center' },
-  stepNumberText: { color: '#287A54', fontSize: 13, fontWeight: '700' },
+  stepNumber: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  stepNumberText: { fontSize: 13, fontWeight: '700' },
   sectionTitle: { fontSize: 16, fontWeight: '700' },
   sectionSub: { fontSize: 11, marginTop: 3 },
   slotGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginBottom: 19 },
@@ -508,10 +509,10 @@ const styles = StyleSheet.create({
   netIdPreviewTitle: { fontSize: 11, fontWeight: '700' },
   netIdPreviewText: { fontSize: 10, lineHeight: 15, marginTop: 4 },
   formError: { marginTop: 10, fontSize: 12, fontWeight: '600' },
-  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 18, paddingTop: 12, backgroundColor: 'rgba(248,248,241,0.98)' },
-  placeButton: { minHeight: 55, borderRadius: 16, backgroundColor: '#287A54', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 17 },
-  placeText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-  placeTotal: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', marginLeft: 'auto', marginRight: 12 },
+  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 18, paddingTop: 12, backgroundColor: 'rgba(248,244,250,0.98)' },
+  placeButton: { minHeight: 55, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 17 },
+  placeText: { fontSize: 14, fontWeight: '700' },
+  placeTotal: { fontSize: 14, fontWeight: '700', marginLeft: 'auto', marginRight: 12 },
   disabledButton: { opacity: 0.5 },
   footerText: { fontSize: 10, textAlign: 'center', paddingTop: 8, paddingBottom: 4 },
   pressed: { opacity: 0.85, transform: [{ scale: 0.99 }] },

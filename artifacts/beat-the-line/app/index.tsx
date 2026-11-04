@@ -49,9 +49,9 @@ function MenuCard({
         <View style={styles.nameRow}>
           <Text style={[styles.itemName, { color: colors.foreground }]}>{item.name}</Text>
           {item.vegetarian && (
-            <View style={styles.vegPill}>
-              <View style={styles.vegDot} />
-              <Text style={styles.vegText}>Veg</Text>
+            <View style={[styles.vegPill, { backgroundColor: colors.successSurface }]}>
+              <View style={[styles.vegDot, { backgroundColor: colors.success }]} />
+              <Text style={[styles.vegText, { color: colors.successForeground }]}>Veg</Text>
             </View>
           )}
         </View>
@@ -67,9 +67,13 @@ function MenuCard({
                 accessibilityLabel={`Add ${item.name} to order`}
                 testID={`add-${item.id}`}
                 onPress={onAdd}
-                style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}
+                style={({ pressed }) => [
+                  styles.addButton,
+                  { backgroundColor: colors.primary },
+                  pressed && styles.pressed,
+                ]}
               >
-                <Feather name="plus" size={20} color="#FFFFFF" />
+                <Feather name="plus" size={20} color={colors.primaryForeground} />
               </Pressable>
             ) : (
               <View style={[styles.quantityControl, { backgroundColor: colors.secondary }]}>
@@ -120,8 +124,8 @@ export default function HomeScreen() {
           { paddingTop: topInset + 34, paddingBottom: bottomInset + 28 },
         ]}
       >
-        <View style={styles.roleBrandMark}>
-          <Feather name="clock" size={23} color="#FFFFFF" />
+        <View style={[styles.roleBrandMark, { backgroundColor: colors.primary }]}>
+          <Feather name="clock" size={23} color={colors.primaryForeground} />
         </View>
         <Text style={[styles.roleEyebrow, { color: colors.primary }]}>CAMPUS DINING</Text>
         <Text style={[styles.roleTitle, { color: colors.foreground }]}>BeatTheLine</Text>
@@ -139,8 +143,8 @@ export default function HomeScreen() {
             pressed && styles.pressed,
           ]}
         >
-          <View style={[styles.roleIcon, { backgroundColor: '#E8EFD9' }]}>
-            <Feather name="shopping-bag" size={21} color="#287A54" />
+          <View style={[styles.roleIcon, { backgroundColor: colors.secondary }]}>
+            <Feather name="shopping-bag" size={21} color={colors.primary} />
           </View>
           <View style={styles.roleCopy}>
             <Text style={[styles.roleCardTitle, { color: colors.foreground }]}>I’m ordering food</Text>
@@ -160,8 +164,8 @@ export default function HomeScreen() {
             pressed && styles.pressed,
           ]}
         >
-          <View style={[styles.roleIcon, { backgroundColor: '#FFF1D5' }]}>
-            <Feather name="clipboard" size={21} color="#9C6812" />
+          <View style={[styles.roleIcon, { backgroundColor: colors.accent }]}>
+            <Feather name="clipboard" size={21} color={colors.accentForeground} />
           </View>
           <View style={styles.roleCopy}>
             <Text style={[styles.roleCardTitle, { color: colors.foreground }]}>I work in dining</Text>
@@ -226,17 +230,17 @@ function MenuContent() {
                 <Text style={[styles.brand, { color: colors.foreground }]}>BeatTheLine</Text>
               </View>
               <View style={[styles.openPill, { backgroundColor: colors.secondary }]}>
-                <View style={styles.openDot} />
+                <View style={[styles.openDot, { backgroundColor: colors.success }]} />
                 <Text style={[styles.openText, { color: colors.primary }]}>Order ahead</Text>
               </View>
             </View>
-            <View style={styles.hero}>
+              <View style={[styles.hero, { backgroundColor: colors.secondary }]}>
               <View style={styles.heroCopy}>
-                <Text style={styles.heroTitle}>Good food, no line.</Text>
-                <Text style={styles.heroSubtitle}>Choose a campus spot, place your order, and pick it up.</Text>
+                  <Text style={[styles.heroTitle, { color: colors.foreground }]}>Good food, no line.</Text>
+                  <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>Choose a campus spot, place your order, and pick it up.</Text>
               </View>
-              <View style={styles.heroIcon}>
-                <Feather name="zap" size={25} color="#74521E" />
+                <View style={[styles.heroIcon, { backgroundColor: colors.accent }]}>
+                <Feather name="zap" size={25} color={colors.accentForeground} />
               </View>
             </View>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Where are you ordering from?</Text>
@@ -267,7 +271,7 @@ function MenuContent() {
                         },
                       ]}
                     >
-                      <Text style={[styles.restaurantText, { color: selected ? '#FFFFFF' : colors.foreground }]}>
+                      <Text style={[styles.restaurantText, { color: selected ? colors.primaryForeground : colors.foreground }]}>
                         {restaurant.name}
                       </Text>
                     </Pressable>
@@ -353,14 +357,18 @@ function MenuContent() {
             accessibilityRole="button"
             testID="continue-to-checkout"
             onPress={() => router.push('/checkout')}
-            style={({ pressed }) => [styles.continueButton, pressed && styles.pressed]}
+            style={({ pressed }) => [
+              styles.continueButton,
+              { backgroundColor: colors.primary },
+              pressed && styles.pressed,
+            ]}
           >
             <View style={styles.cartLabel}>
-              <View style={styles.countBubble}><Text style={styles.countBubbleText}>{itemCount}</Text></View>
-              <Text style={styles.continueText}>View your order</Text>
+              <View style={styles.countBubble}><Text style={[styles.countBubbleText, { color: colors.primary }]}>{itemCount}</Text></View>
+              <Text style={[styles.continueText, { color: colors.primaryForeground }]}>View your order</Text>
             </View>
-            <Text style={styles.continueTotal}>{money(total)}</Text>
-            <Feather name="arrow-right" size={18} color="#FFFFFF" />
+            <Text style={[styles.continueTotal, { color: colors.primaryForeground }]}>{money(total)}</Text>
+              <Feather name="arrow-right" size={18} color={colors.primaryForeground} />
           </Pressable>
         </View>
       )}
@@ -371,7 +379,7 @@ function MenuContent() {
 const styles = StyleSheet.create({
   page: { flex: 1 },
   roleContent: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 22 },
-  roleBrandMark: { width: 50, height: 50, borderRadius: 17, backgroundColor: '#287A54', alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
+  roleBrandMark: { width: 50, height: 50, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
   roleEyebrow: { fontSize: 11, letterSpacing: 1.5, fontWeight: '700' },
   roleTitle: { fontSize: 34, fontWeight: '700', letterSpacing: -1.2, marginTop: 4 },
   roleSubtitle: { fontSize: 14, lineHeight: 21, marginTop: 9, marginBottom: 28, maxWidth: 310 },
@@ -387,13 +395,13 @@ const styles = StyleSheet.create({
   eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
   brand: { fontSize: 25, fontWeight: '700', letterSpacing: -0.7, marginTop: 2 },
   openPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 10, borderRadius: 20 },
-  openDot: { width: 7, height: 7, backgroundColor: '#4F9A62', borderRadius: 4 },
+  openDot: { width: 7, height: 7, borderRadius: 4 },
   openText: { fontSize: 11, fontWeight: '600' },
-  hero: { minHeight: 112, borderRadius: 20, backgroundColor: '#E8EFD9', padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', overflow: 'hidden', marginBottom: 23 },
+  hero: { minHeight: 112, borderRadius: 20, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', overflow: 'hidden', marginBottom: 23 },
   heroCopy: { flex: 1, paddingRight: 12 },
-  heroTitle: { color: '#244A35', fontSize: 22, fontWeight: '700', letterSpacing: -0.5, maxWidth: 240 },
-  heroSubtitle: { color: '#56705C', fontSize: 12, lineHeight: 18, marginTop: 6, maxWidth: 245 },
-  heroIcon: { width: 50, height: 50, borderRadius: 16, backgroundColor: '#F9D78B', alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '8deg' }] },
+  heroTitle: { fontSize: 22, fontWeight: '700', letterSpacing: -0.5, maxWidth: 240 },
+  heroSubtitle: { fontSize: 12, lineHeight: 18, marginTop: 6, maxWidth: 245 },
+  heroIcon: { width: 50, height: 50, borderRadius: 16, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '8deg' }] },
   sectionTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
   restaurantList: { gap: 8, paddingVertical: 12, paddingRight: 4 },
   restaurantButton: { minHeight: 40, borderRadius: 20, paddingHorizontal: 15, borderWidth: 1, justifyContent: 'center' },
@@ -411,13 +419,13 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 },
   itemName: { flex: 1, fontSize: 13, lineHeight: 18, fontWeight: '700' },
   description: { fontSize: 10.5, lineHeight: 15, marginTop: 4 },
-  vegPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 4, backgroundColor: '#EEF6E7', borderRadius: 10 },
-  vegDot: { width: 6, height: 6, backgroundColor: '#4E965C', borderRadius: 4 },
-  vegText: { fontSize: 9, color: '#305E39', fontWeight: '700' },
+  vegPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10 },
+  vegDot: { width: 6, height: 6, borderRadius: 4 },
+  vegText: { fontSize: 9, fontWeight: '700' },
   priceRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
   price: { fontSize: 13, fontWeight: '700' },
   unavailable: { fontSize: 10, fontWeight: '600' },
-  addButton: { width: 32, height: 32, borderRadius: 11, backgroundColor: '#287A54', alignItems: 'center', justifyContent: 'center' },
+  addButton: { width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   quantityControl: { height: 32, minWidth: 88, borderRadius: 11, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' },
   quantity: { fontSize: 12, fontWeight: '700', minWidth: 16, textAlign: 'center' },
   notice: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', padding: 12, borderRadius: 12, marginBottom: 12 },
@@ -430,11 +438,11 @@ const styles = StyleSheet.create({
   retryText: { fontSize: 11, marginTop: 4 },
   loading: { minHeight: 70, alignItems: 'center', justifyContent: 'center', gap: 7 },
   loadingText: { fontSize: 12 },
-  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 18, paddingTop: 12, backgroundColor: 'rgba(248,248,241,0.97)' },
-  continueButton: { minHeight: 56, backgroundColor: '#287A54', borderRadius: 17, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 18, paddingTop: 12, backgroundColor: 'rgba(248,244,250,0.97)' },
+  continueButton: { minHeight: 56, borderRadius: 17, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   cartLabel: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   countBubble: { minWidth: 25, height: 25, paddingHorizontal: 6, borderRadius: 13, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-  countBubbleText: { color: '#287A54', fontSize: 12, fontWeight: '700' },
+  countBubbleText: { fontSize: 12, fontWeight: '700' },
   continueText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
   continueTotal: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', marginLeft: 'auto', marginRight: 12 },
   pressed: { opacity: 0.84 },

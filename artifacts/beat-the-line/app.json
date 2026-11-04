@@ -4,6 +4,9 @@
     "slug": "beat-the-line",
     "version": "1.0.0",
     "orientation": "portrait",
+    "splash": {
+      "backgroundColor": "#F8F4FA"
+    },
     "icon": "./assets/images/icon.png",
     "scheme": "beat-the-line",
     "userInterfaceStyle": "automatic",
