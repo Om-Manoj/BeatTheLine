@@ -114,7 +114,9 @@ export default function HomeScreen() {
   const topInset = Math.max(insets.top, Platform.OS === 'web' ? 67 : 0);
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'web' ? 34 : 0);
 
-  if (isCustomer) return <MenuContent />;
+  if (isCustomer) {
+    return <MenuContent onChooseAnotherRole={() => setIsCustomer(false)} />;
+  }
 
   return (
     <View style={[styles.page, { backgroundColor: colors.background }]}>
@@ -183,7 +185,7 @@ export default function HomeScreen() {
   );
 }
 
-function MenuContent() {
+function MenuContent({ onChooseAnotherRole }: { onChooseAnotherRole: () => void }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { data: menu, isLoading, isError, refetch } = useGetMenu({
@@ -224,6 +226,16 @@ function MenuContent() {
         stickySectionHeadersEnabled={false}
         ListHeaderComponent={
           <View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Choose another role"
+              testID="customer-choose-another-role"
+              onPress={onChooseAnotherRole}
+              style={({ pressed }) => [styles.backLink, pressed && styles.pressed]}
+            >
+              <Feather name="arrow-left" size={17} color={colors.primary} />
+              <Text style={[styles.backText, { color: colors.primary }]}>Choose another role</Text>
+            </Pressable>
             <View style={styles.topLine}>
               <View>
                 <Text style={[styles.eyebrow, { color: colors.primary }]}>CAMPUS DINING</Text>
@@ -378,6 +390,8 @@ function MenuContent() {
 
 const styles = StyleSheet.create({
   page: { flex: 1 },
+  backLink: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 7, minHeight: 40, marginBottom: 9 },
+  backText: { fontSize: 13, fontWeight: '600' },
   roleContent: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 22 },
   roleBrandMark: { width: 50, height: 50, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
   roleEyebrow: { fontSize: 11, letterSpacing: 1.5, fontWeight: '700' },
